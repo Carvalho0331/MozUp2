@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mozup-v15';
+const CACHE_NAME = 'mozup-v16';
 const ASSETS = [
     './',
     './index.html',

@@ -281,7 +281,6 @@ button[type="submit"]:active::after {
   opacity: 0;
 }
 
-
 .loading-hidden{
-  display: hidden;
+  display: none;
 }
