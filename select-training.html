@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOZUP - Seleção de Formação</title>
+    <meta name="theme-color" content="#FF6B00">
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href="icons/icon-192x192.png">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <button class="back-button" onclick="window.history.back()">← Voltar</button>
+            <h1><span class="mozup-orange">MOZUP</span> Pemba</h1>
+        </header>
+
+        <main class="training-screen">
+            <h2>Selecione a Formação</h2>
+            <div class="training-grid">
+                <button class="training-card" data-training="formacao1">
+                    <div class="training-icon">📚</div>
+                    <h3>Formação 1</h3>
+ 
+                </button>
+
+                <button class="training-card" data-training="formacao2">
+                    <div class="training-icon">🎓</div>
+                    <h3>Formação 2</h3>
+            
+                </button>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2025 S&L Group</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.training-card').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const location = urlParams.get('location');
+                    const training = btn.dataset.training;
+                    window.location.href = `form.html?location=${location}&training=${training}`;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

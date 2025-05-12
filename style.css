@@ -1,0 +1,282 @@
+:root {
+  --mozup-orange: #FF6B00;
+  --mozup-dark: #2D3748;
+  --mozup-light: #FFF5F0;
+  --mozup-gray: #718096;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --radius: 8px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--mozup-light);
+  color: var(--mozup-dark);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  padding: 2rem 0;
+  border-bottom: 2px solid rgba(255, 107, 0, 0.1);
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--mozup-dark);
+}
+
+.mozup-orange {
+  color: var(--mozup-orange);
+}
+
+.location-screen, .training-screen {
+  padding: 2rem;
+  text-align: center;
+}
+
+.location-grid, .training-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.location-card, .training-card {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.location-card:hover, .training-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.location-icon, .training-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.back-button {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  background: none;
+  border: none;
+  color: var(--mozup-orange);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  transition: opacity 0.3s ease;
+}
+
+.back-button:hover {
+  opacity: 0.8;
+}
+
+#presencaForm {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+input, select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color: var(--mozup-orange);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2);
+}
+
+
+#toast {
+  position: fixed;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--mozup-dark);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 1000;
+}
+
+#toast.toast-visible {
+  bottom: 20px;
+}
+
+#loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+footer {
+  text-align: center;
+  margin-top: auto;
+  padding: 2rem 0;
+  color: var(--mozup-gray);
+  border-top: 2px solid rgba(255, 107, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: 1rem;
+  }
+  
+  header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+.preview-hidden {
+  display: none;
+}
+
+.preview-visible {
+  display: block;
+  margin-top: 2rem;
+  border: 2px dashed var(--mozup-orange);
+  padding: 1rem;
+  border-radius: var(--radius);
+}
+
+.preview-visible iframe {
+  width: 100%;
+  height: 500px;
+  border: none;
+}
+
+/* Botão Salvar de ponta a ponta */
+button[type="submit"].mozup-button {
+  display: flex;                    /* layout flexível para alinhar ícone e texto */
+  justify-content: center;          /* centraliza horizontalmente */
+  align-items: center;              /* centraliza verticalmente */
+  width: 100%;                      /* ocupa 100% da largura do container */
+  max-width: 100%;                  /* evita ultrapassar o container */
+  box-sizing: border-box;           /* inclui padding na largura total */
+  background: var(--mozup-orange);
+  color: white;
+  padding: 1rem;                    /* padding uniforme */
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1.1rem;
+  gap: 0.8rem;                      /* espaço entre ícone e texto */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Hover / Active */
+button[type="submit"].mozup-button:hover {
+  background: #E05E00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+}
+
+button[type="submit"].mozup-button:active {
+  transform: translateY(0);
+}
+
+/* Disabled / Loading */
+button[type="submit"].mozup-button:disabled {
+  background: #FF9B66;
+  cursor: not-allowed;
+}
+
+/* Ícone dentro do botão */
+button[type="submit"] .icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+}
+
+/* Texto dentro do botão */
+button[type="submit"] span {
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Efeito de onda ao clicar */
+button[type="submit"]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.5s ease;
+}
+
+button[type="submit"]:active::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+}

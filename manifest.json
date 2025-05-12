@@ -1,0 +1,8 @@
+{
+  "name": "MOZUP Controle",
+  "short_name": "MOZUP",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FFF5F0",
+  "theme_color": "#FF6B00"
+}

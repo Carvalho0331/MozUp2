@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOZUP Controle de Presenças</title>
+    <meta name="theme-color" content="#FF6B00">
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href="icons/icon-192x192.png">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <button class="back-button" onclick="window.history.back()">← Voltar</button>
+            <h1>
+                <span class="mozup-orange">MOZUP</span> 
+                <span id="locationHeader"></span>
+                <span id="trainingHeader" class="training-label"></span>
+            </h1>
+        </header>
+
+        <main>
+            <form id="presencaForm">
+                <div class="input-group">
+                    <label for="empresa">Empresa</label>
+                    <select id="empresa" required>
+                        <option value="">Carregando empresas...</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="correcao">Corrigir Nome da Empresa</label>
+                    <input type="text" id="correcao" placeholder="Digite o nome correto (opcional)">
+                </div>
+
+                <div class="input-group">
+                    <label for="participante">Participante</label>
+                    <input type="text" id="participante" placeholder="Nome completo" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="exemplo@empresa.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="contacto">Contacto</label>
+                    <input type="tel" id="contacto" placeholder="+258 8X XXX XXXX" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="funcao">Função</label>
+                    <input type="text" id="funcao" placeholder="Cargo/Função" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="genero">Gênero</label>
+                    <select id="genero" required>
+                        <option value="">Selecione...</option>
+                        <option>Masculino</option>
+                        <option>Feminino</option>
+                        <option>Outro</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="mozup-button">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                    </svg>
+                    <span id="btnText">SALVAR DADOS</span>
+                    <span id="btnLoading" class="loading-hidden">Salvando...</span>
+                </button>
+            </form>
+        </main>
+
+        <footer>
+            <p>© 2025 S&L Group</p>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast-hidden"></div>
+    <div id="loading" class="loading-hidden">
+        <svg class="loading-spinner" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FF6B00">
+            <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" 
+                  stroke-width="2" 
+                  stroke-linecap="round"/>
+        </svg>
+    </div>
+
+    <script src="./app.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const LOCATION = urlParams.get('location');
+        const TRAINING = urlParams.get('training');
+        
+        document.getElementById('locationHeader').textContent = LOCATION?.charAt(0).toUpperCase() + LOCATION?.slice(1);
+        document.getElementById('trainingHeader').textContent = TRAINING ? `- ${TRAINING.toUpperCase()}` : '';
+    </script>
+</body>
+</html>
