@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbx8xEDhm_ga3jHtwCdOgvclow0fRqS_HvniHc65Am115gpLXpZ7MyLkM_tct7X0W4lH/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyl0KyLF8p1CEU-C87YB6GzyEBpsfsvWCL1Yz3RRc1tHOwKRXsXnPMedKTFEjm3QB4D/exec';
 const urlParams = new URLSearchParams(window.location.search);
 const LOCATION = urlParams.get('location');
 const TRAINING = urlParams.get('training');
@@ -16,6 +16,10 @@ const DOM = {
     loading: document.getElementById('loading'),
     btnText: document.getElementById('btnText'),
     btnLoading: document.getElementById('btnLoading'),
+    addCompanyBox: document.querySelector('.add-company-box'),
+    novaEmpresa: document.getElementById('novaEmpresa'),
+    confirmarEmpresa: document.getElementById('confirmarEmpresa'),
+    cancelarEmpresa: document.getElementById('cancelarEmpresa')
 };
 
 // Função de validação de parâmetros
@@ -25,25 +29,16 @@ function validarParametros() {
         window.location.href = 'index.html';
         return false;
     }
-    
-    // Maputo não deve ter parâmetro de training
-    if (LOCATION === 'maputo' && TRAINING) {
-        mostrarToast('Configuração inválida para Maputo', 5000);
-        window.location.href = 'index.html';
-        return false;
-    }
-    
     return true;
 }
 
 async function carregarDetalhesEmpresa() {
     try {
         const empresaSelecionada = DOM.empresa.value;
-        if (!empresaSelecionada) return;
+        if (!empresaSelecionada || empresaSelecionada === "__nova__") return;
 
         mostrarLoading(true);
         
-        // Construir URL corretamente para Maputo
         let url = `${API_URL}?action=getDetalhes&location=${LOCATION}&empresa=${encodeURIComponent(empresaSelecionada)}`;
         if (LOCATION !== 'maputo' && TRAINING) {
             url += `&training=${TRAINING}`;
@@ -55,9 +50,7 @@ async function carregarDetalhesEmpresa() {
         
         const detalhes = await resposta.json();
         
-        if (!detalhes) {
-            throw new Error('Resposta inválida da API');
-        }
+        if (!detalhes) throw new Error('Resposta inválida da API');
 
         // Preencher campos
         DOM.participante.value = detalhes.participante || '';
@@ -65,6 +58,9 @@ async function carregarDetalhesEmpresa() {
         DOM.contacto.value = detalhes.contacto || '';
         DOM.funcao.value = detalhes.funcao || '';
         DOM.genero.value = detalhes.genero || '';
+
+        DOM.form.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.3)';
+        setTimeout(() => DOM.form.style.boxShadow = 'var(--shadow)', 1000);
 
     } catch (error) {
         console.error('Erro ao carregar detalhes:', error);
@@ -76,40 +72,85 @@ async function carregarDetalhesEmpresa() {
 
 async function carregarEmpresas() {
     try {
-        if (!validarParametros()) return;
-        
         mostrarLoading(true);
-        
-        // Construir URL correta
         let url = `${API_URL}?action=getEmpresas&location=${LOCATION}&cache=${Date.now()}`;
+        
         if (LOCATION !== 'maputo' && TRAINING) {
             url += `&training=${TRAINING}`;
         }
 
-        console.log('Carregando empresas da URL:', url); // Debug
-        
         const resposta = await fetch(url);
         
-        if (!resposta.ok) throw new Error(`HTTP error! status: ${resposta.status}`);
+        if (!resposta.ok) throw new Error('Falha ao carregar empresas');
         
         const empresas = await resposta.json();
-        
-        if (!Array.isArray(empresas)) {
-            throw new Error('Resposta inválida da API - formato não é array');
-        }
 
-        // Atualizar dropdown
-        DOM.empresa.innerHTML = empresas
-            .map(empresa => `<option value="${empresa}">${empresa}</option>`)
-            .join('');
-
-        if (empresas.length === 0) {
-            mostrarToast('Nenhuma empresa encontrada!', 3000);
+        // Atualizar dropdown - mantendo apenas a opção de adicionar nova empresa
+        if (empresas.length > 0) {
+            DOM.empresa.innerHTML = empresas
+                .map(empresa => `<option value="${empresa}">${empresa}</option>`)
+                .join('') +
+                '<option value="__nova__">✚ Adicionar nova empresa</option>';
+            
+            DOM.empresa.value = empresas[0];
+            await carregarDetalhesEmpresa();
+        } else {
+            // Se não houver empresas, mostrar apenas a opção de adicionar
+            DOM.empresa.innerHTML = '<option value="__nova__">✚ Adicionar nova empresa</option>';
         }
 
     } catch (error) {
         console.error('Erro ao carregar empresas:', error);
         mostrarToast(`Erro: ${error.message}`, 5000);
+        DOM.empresa.innerHTML = '<option value="__nova__">✚ Adicionar nova empresa</option>';
+    } finally {
+        mostrarLoading(false);
+    }
+}
+
+// Função para adicionar nova empresa
+async function adicionarNovaEmpresa() {
+    const novaEmpresa = DOM.novaEmpresa.value.trim();
+    
+    if (!novaEmpresa) {
+        mostrarToast('Digite o nome da empresa');
+        return;
+    }
+
+    try {
+        mostrarLoading(true);
+        
+        let url = `${API_URL}?action=addEmpresa` + 
+                 `&location=${LOCATION}` + 
+                 `&empresa=${encodeURIComponent(novaEmpresa)}`;
+        
+        if (LOCATION !== 'maputo' && TRAINING) {
+            url += `&training=${TRAINING}`;
+        }
+
+        const resposta = await fetch(url);
+        
+        const resultado = await resposta.json();
+        
+        if (resultado.status === 'success') {
+            // Atualizar UI
+            const newOption = new Option(novaEmpresa, novaEmpresa);
+            DOM.empresa.insertBefore(newOption, DOM.empresa.lastChild);
+            DOM.empresa.value = novaEmpresa;
+            
+            DOM.empresa.classList.remove('hidden');
+            DOM.addCompanyBox.classList.remove('visible');
+            DOM.novaEmpresa.value = '';
+            
+            mostrarToast('Empresa adicionada com sucesso!');
+            await carregarDetalhesEmpresa();
+        } else {
+            throw new Error(resultado.message);
+        }
+        
+    } catch (error) {
+        mostrarToast(`Erro: ${error.message}`);
+        console.error(error);
     } finally {
         mostrarLoading(false);
     }
@@ -132,7 +173,6 @@ async function enviarFormulario(e) {
         genero: DOM.genero.value
     };
 
-    // Adicionar training apenas se não for Maputo
     if (LOCATION !== 'maputo' && TRAINING) {
         dados.training = TRAINING;
     }
@@ -152,13 +192,9 @@ async function enviarFormulario(e) {
             throw new Error(resultado.message || 'Erro desconhecido');
         }
 
-        // Resetar formulário após sucesso
         DOM.form.reset();
         DOM.correcao.value = '';
-        
-        // Recarregar empresas atualizadas
         setTimeout(() => carregarEmpresas(), 1000);
-        
         mostrarToast(resultado.message || 'Dados salvos com sucesso!');
 
     } catch (error) {
@@ -170,7 +206,7 @@ async function enviarFormulario(e) {
     }
 }
 
-// Funções auxiliares mantidas conforme necessário
+// Funções auxiliares
 function mostrarToast(mensagem, duracao = 3000) {
     DOM.toast.textContent = mensagem;
     DOM.toast.classList.add('toast-visible');
@@ -186,6 +222,25 @@ function alterarEstadoBotao(carregando) {
     DOM.btnLoading.style.display = carregando ? 'inline' : 'none';
     DOM.form.querySelector('button').disabled = carregando;
 }
+
+// Event Listeners
+DOM.empresa.addEventListener('change', function() {
+    if (this.value === '__nova__') {
+        this.classList.add('hidden');
+        DOM.addCompanyBox.classList.add('visible');
+        DOM.novaEmpresa.focus();
+    } else {
+        carregarDetalhesEmpresa();
+    }
+});
+
+DOM.confirmarEmpresa.addEventListener('click', adicionarNovaEmpresa);
+DOM.cancelarEmpresa.addEventListener('click', () => {
+    DOM.empresa.classList.remove('hidden');
+    DOM.addCompanyBox.classList.remove('visible');
+    DOM.novaEmpresa.value = '';
+    DOM.empresa.value = '';
+});
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', async () => {

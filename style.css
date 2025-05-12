@@ -284,3 +284,76 @@ button[type="submit"]:active::after {
 .loading-hidden{
   display: none;
 }
+
+.dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+#empresa {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  appearance: none;
+  background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FF6B00' stroke-width='2'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e") no-repeat right 0.8rem center;
+  background-size: 1rem;
+}
+
+.add-company-box {
+  display: none;
+  position: absolute;
+  width: 100%;
+  z-index: 10;
+  background: white;
+  border: 2px solid #FF6B00;
+  border-radius: 8px;
+  margin-top: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.visible {
+  display: block !important;
+}
+
+#novaEmpresa {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.button-group {
+  display: flex;
+  border-top: 1px solid #eee;
+}
+
+.btn-confirm, .btn-cancel {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm {
+  color: #4CAF50;
+  border-right: 1px solid #eee;
+}
+
+.btn-confirm:hover {
+  background: #f0fff4;
+}
+
+.btn-cancel {
+  color: #f44336;
+}
+
+.btn-cancel:hover {
+  background: #fff0f0;
+}

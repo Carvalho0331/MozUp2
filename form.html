@@ -25,9 +25,18 @@
             <form id="presencaForm">
                 <div class="input-group">
                     <label for="empresa">Empresa</label>
-                    <select id="empresa" required>
-                        <option value="">Carregando empresas...</option>
-                    </select>
+                    <div class="dropdown-container">
+                        <select id="empresa" required>
+                            <option value="">Carregando empresas...</option>
+                        </select>
+                        <div class="add-company-box hidden">
+                            <input type="text" id="novaEmpresa" placeholder="Digite o nome da nova empresa">
+                            <div class="button-group">
+                                <button type="button" id="confirmarEmpresa" class="btn-confirm">✔</button>
+                                <button type="button" id="cancelarEmpresa" class="btn-cancel">✖</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="input-group">
@@ -90,13 +99,6 @@
     </div>
 
     <script src="./app.js"></script>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const LOCATION = urlParams.get('location');
-        const TRAINING = urlParams.get('training');
-        
-        document.getElementById('locationHeader').textContent = LOCATION?.charAt(0).toUpperCase() + LOCATION?.slice(1);
-        document.getElementById('trainingHeader').textContent = TRAINING ? `- ${TRAINING.toUpperCase()}` : '';
-    </script>
+
 </body>
 </html>
