@@ -357,3 +357,16 @@ button[type="submit"]:active::after {
 .btn-cancel:hover {
   background: #fff0f0;
 }
+
+.back-button {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #333;
+}
+
+.back-button:hover {
+  background: #e0e0e0;
+}
