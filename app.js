@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbyl0KyLF8p1CEU-C87YB6GzyEBpsfsvWCL1Yz3RRc1tHOwKRXsXnPMedKTFEjm3QB4D/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyjWIkvDLo5-0UEuUWPtN_7sAwcQX-UIw9G5YcI1tNxkpr_-j4FAGIJJr0-VDL8mcpT/exec';
 const urlParams = new URLSearchParams(window.location.search);
 const LOCATION = urlParams.get('location');
 const TRAINING = urlParams.get('training');
