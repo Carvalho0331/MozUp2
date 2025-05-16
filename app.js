@@ -6,6 +6,7 @@ const TRAINING = urlParams.get('training');
 const DOM = {
     form: document.getElementById('presencaForm'),
     empresa: document.getElementById('empresa'),
+    empresaSearch: document.getElementById('empresaSearch'),
     correcao: document.getElementById('correcao'),
     participante: document.getElementById('participante'),
     email: document.getElementById('email'),
@@ -22,132 +23,144 @@ const DOM = {
     cancelarEmpresa: document.getElementById('cancelarEmpresa')
 };
 
-// Função de validação de parâmetros
-function validarParametros() {
-    if (!LOCATION) {
-        mostrarToast('Localização não especificada!', 5000);
-        window.location.href = 'index.html';
-        return false;
-    }
-    return true;
-}
+// ================= FUNÇÃO DE PESQUISA COMPLETA =================
+function setupSearch() {
+    const search = DOM.empresaSearch;
+    const dropdown = document.querySelector('.dropdown-content');
+    let isOpen = false;
 
-async function carregarDetalhesEmpresa() {
-    try {
-        const empresaSelecionada = DOM.empresa.value;
-        if (!empresaSelecionada || empresaSelecionada === "__nova__") return;
-
-        mostrarLoading(true);
+    const toggleDropdown = (open) => {
+        isOpen = open;
+        dropdown.style.display = open ? 'block' : 'none';
+        DOM.empresa.size = open ? 5 : 1;
         
-        let url = `${API_URL}?action=getDetalhes&location=${LOCATION}&empresa=${encodeURIComponent(empresaSelecionada)}`;
-        if (LOCATION !== 'maputo' && TRAINING) {
-            url += `&training=${TRAINING}`;
+        if(open) {
+            // Resetar filtro e focar campo
+            [...DOM.empresa.options].forEach(opt => opt.style.display = 'block');
+            search.focus();
         }
+    };
 
-        const resposta = await fetch(url);
-        
-        if (!resposta.ok) throw new Error(`HTTP error! status: ${resposta.status}`);
-        
-        const detalhes = await resposta.json();
-        
-        if (!detalhes) throw new Error('Resposta inválida da API');
+    // Eventos de clique
+    search.addEventListener('click', () => toggleDropdown(true));
+    document.addEventListener('click', (e) => {
+        if(!e.target.closest('.custom-dropdown')) toggleDropdown(false);
+    });
 
-        // Preencher campos
-        DOM.participante.value = detalhes.participante || '';
-        DOM.email.value = detalhes.email || '';
-        DOM.contacto.value = detalhes.contacto || '';
-        DOM.funcao.value = detalhes.funcao || '';
-        DOM.genero.value = detalhes.genero || '';
+    // Filtro em tempo real
+    search.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        [...DOM.empresa.options].forEach(opt => {
+            opt.style.display = opt.text.toLowerCase().includes(term) ? 'block' : 'none';
+        });
+    });
 
-        DOM.form.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.3)';
-        setTimeout(() => DOM.form.style.boxShadow = 'var(--shadow)', 1000);
+    // Seleção de opção
+    DOM.empresa.addEventListener('click', (e) => {
+        if(e.target.tagName === 'OPTION') {
+            search.value = e.target.textContent;
+            DOM.empresa.value = e.target.value;
+            toggleDropdown(false);
+            
+            if(e.target.value === '__nova__') {
+                DOM.empresa.classList.add('hidden');
+                DOM.addCompanyBox.classList.add('visible');
+                DOM.novaEmpresa.focus();
+            } else {
+                carregarDetalhesEmpresa();
+            }
+        }
+    });
 
-    } catch (error) {
-        console.error('Erro ao carregar detalhes:', error);
-        mostrarToast(`Erro: ${error.message}`, 5000);
-    } finally {
-        mostrarLoading(false);
-    }
+    // Controle por teclado
+    search.addEventListener('keydown', (e) => {
+        if(e.key === 'Escape') toggleDropdown(false);
+        if(e.key === 'Enter') e.preventDefault();
+    });
 }
 
+// ================= FUNÇÕES DE CARREGAMENTO =================
 async function carregarEmpresas() {
     try {
         mostrarLoading(true);
         let url = `${API_URL}?action=getEmpresas&location=${LOCATION}&cache=${Date.now()}`;
         
-        if (LOCATION !== 'maputo' && TRAINING) {
-            url += `&training=${TRAINING}`;
-        }
+        if(LOCATION !== 'maputo' && TRAINING) url += `&training=${TRAINING}`;
 
-        const resposta = await fetch(url);
+        const response = await fetch(url);
+        if(!response.ok) throw new Error('Erro ao carregar empresas');
         
-        if (!resposta.ok) throw new Error('Falha ao carregar empresas');
-        
-        const empresas = await resposta.json();
+        const empresas = await response.json();
+        DOM.empresa.innerHTML = empresas.map(e => 
+            `<option value="${e}">${e}</option>`
+        ).join('') + '<option value="__nova__" style="color:#FF6B00;font-weight:500">✚ Adicionar nova empresa</option>';
 
-        // Atualizar dropdown - mantendo apenas a opção de adicionar nova empresa
-        if (empresas.length > 0) {
-            DOM.empresa.innerHTML = empresas
-                .map(empresa => `<option value="${empresa}">${empresa}</option>`)
-                .join('') +
-                '<option value="__nova__">✚ Adicionar nova empresa</option>';
-            
+        if(empresas.length > 0) {
+            DOM.empresaSearch.value = empresas[0];
             DOM.empresa.value = empresas[0];
             await carregarDetalhesEmpresa();
-        } else {
-            // Se não houver empresas, mostrar apenas a opção de adicionar
-            DOM.empresa.innerHTML = '<option value="__nova__">✚ Adicionar nova empresa</option>';
         }
 
     } catch (error) {
-        console.error('Erro ao carregar empresas:', error);
         mostrarToast(`Erro: ${error.message}`, 5000);
-        DOM.empresa.innerHTML = '<option value="__nova__">✚ Adicionar nova empresa</option>';
+        console.error(error);
     } finally {
         mostrarLoading(false);
     }
 }
 
-// Função para adicionar nova empresa
-async function adicionarNovaEmpresa() {
-    const novaEmpresa = DOM.novaEmpresa.value.trim();
-    
-    if (!novaEmpresa) {
-        mostrarToast('Digite o nome da empresa');
-        return;
+async function carregarDetalhesEmpresa() {
+    try {
+        const empresa = DOM.empresa.value;
+        if(!empresa || empresa === '__nova__') return;
+
+        mostrarLoading(true);
+        let url = `${API_URL}?action=getDetalhes&location=${LOCATION}&empresa=${encodeURIComponent(empresa)}`;
+        if(LOCATION !== 'maputo' && TRAINING) url += `&training=${TRAINING}`;
+
+        const response = await fetch(url);
+        if(!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        
+        const detalhes = await response.json();
+        ['participante', 'email', 'contacto', 'funcao', 'genero'].forEach(id => {
+            document.getElementById(id).value = detalhes[id] || '';
+        });
+
+        DOM.form.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.3)';
+        setTimeout(() => DOM.form.style.boxShadow = 'var(--shadow)', 1000);
+
+    } catch (error) {
+        mostrarToast(`Erro: ${error.message}`, 5000);
+        console.error(error);
+    } finally {
+        mostrarLoading(false);
     }
+}
+
+// ================= FUNÇÕES DE FORMULÁRIO =================
+async function adicionarNovaEmpresa() {
+    const nome = DOM.novaEmpresa.value.trim();
+    if(!nome) return mostrarToast('Digite o nome da empresa');
 
     try {
         mostrarLoading(true);
-        
-        let url = `${API_URL}?action=addEmpresa` + 
-                 `&location=${LOCATION}` + 
-                 `&empresa=${encodeURIComponent(novaEmpresa)}`;
-        
-        if (LOCATION !== 'maputo' && TRAINING) {
-            url += `&training=${TRAINING}`;
-        }
+        let url = `${API_URL}?action=addEmpresa&location=${LOCATION}&empresa=${encodeURIComponent(nome)}`;
+        if(LOCATION !== 'maputo' && TRAINING) url += `&training=${TRAINING}`;
 
-        const resposta = await fetch(url);
+        const response = await fetch(url);
+        const resultado = await response.json();
         
-        const resultado = await resposta.json();
-        
-        if (resultado.status === 'success') {
-            // Atualizar UI
-            const newOption = new Option(novaEmpresa, novaEmpresa);
+        if(resultado.status === 'success') {
+            const newOption = new Option(nome, nome);
             DOM.empresa.insertBefore(newOption, DOM.empresa.lastChild);
-            DOM.empresa.value = novaEmpresa;
-            
-            DOM.empresa.classList.remove('hidden');
+            DOM.empresaSearch.value = nome;
+            DOM.empresa.value = nome;
             DOM.addCompanyBox.classList.remove('visible');
-            DOM.novaEmpresa.value = '';
-            
             mostrarToast('Empresa adicionada com sucesso!');
             await carregarDetalhesEmpresa();
         } else {
             throw new Error(resultado.message);
         }
-        
     } catch (error) {
         mostrarToast(`Erro: ${error.message}`);
         console.error(error);
@@ -158,8 +171,7 @@ async function adicionarNovaEmpresa() {
 
 async function enviarFormulario(e) {
     e.preventDefault();
-    
-    if (!validarParametros()) return;
+    if(!validarParametros()) return;
 
     const dados = {
         action: 'salvarDados',
@@ -173,40 +185,42 @@ async function enviarFormulario(e) {
         genero: DOM.genero.value
     };
 
-    if (LOCATION !== 'maputo' && TRAINING) {
-        dados.training = TRAINING;
-    }
+    if(LOCATION !== 'maputo' && TRAINING) dados.training = TRAINING;
 
     try {
         alterarEstadoBotao(true);
         mostrarLoading(true);
         
         const params = new URLSearchParams(dados);
-        const resposta = await fetch(`${API_URL}?${params}`);
+        const response = await fetch(`${API_URL}?${params}`);
+        const resultado = await response.json();
         
-        if (!resposta.ok) throw new Error(`HTTP error! status: ${resposta.status}`);
-        
-        const resultado = await resposta.json();
-
-        if (resultado.status !== 'success') {
-            throw new Error(resultado.message || 'Erro desconhecido');
-        }
+        if(resultado.status !== 'success') throw new Error(resultado.message);
 
         DOM.form.reset();
         DOM.correcao.value = '';
-        setTimeout(() => carregarEmpresas(), 1000);
-        mostrarToast(resultado.message || 'Dados salvos com sucesso!');
+        mostrarToast('Dados salvos com sucesso!');
+        setTimeout(carregarEmpresas, 1000);
 
     } catch (error) {
-        console.error('Erro ao enviar formulário:', error);
         mostrarToast(`Erro: ${error.message}`, 5000);
+        console.error(error);
     } finally {
         alterarEstadoBotao(false);
         mostrarLoading(false);
     }
 }
 
-// Funções auxiliares
+// ================= FUNÇÕES AUXILIARES =================
+function validarParametros() {
+    if(!LOCATION) {
+        mostrarToast('Localização não especificada!', 5000);
+        window.location.href = 'index.html';
+        return false;
+    }
+    return true;
+}
+
 function mostrarToast(mensagem, duracao = 3000) {
     DOM.toast.textContent = mensagem;
     DOM.toast.classList.add('toast-visible');
@@ -223,35 +237,26 @@ function alterarEstadoBotao(carregando) {
     DOM.form.querySelector('button').disabled = carregando;
 }
 
-// Event Listeners
-DOM.empresa.addEventListener('change', function() {
-    if (this.value === '__nova__') {
-        this.classList.add('hidden');
-        DOM.addCompanyBox.classList.add('visible');
-        DOM.novaEmpresa.focus();
-    } else {
-        carregarDetalhesEmpresa();
-    }
-});
-
+// ================= EVENT LISTENERS =================
 DOM.confirmarEmpresa.addEventListener('click', adicionarNovaEmpresa);
 DOM.cancelarEmpresa.addEventListener('click', () => {
     DOM.empresa.classList.remove('hidden');
     DOM.addCompanyBox.classList.remove('visible');
     DOM.novaEmpresa.value = '';
     DOM.empresa.value = '';
+    DOM.empresaSearch.value = '';
 });
 
-// Inicialização
+// ================= INICIALIZAÇÃO =================
 document.addEventListener('DOMContentLoaded', async () => {
-    if (!validarParametros()) return;
+    if(!validarParametros()) return;
     
     try {
         await carregarEmpresas();
-        DOM.empresa.addEventListener('change', carregarDetalhesEmpresa);
+        setupSearch();
         DOM.form.addEventListener('submit', enviarFormulario);
     } catch (error) {
-        console.error('Erro na inicialização:', error);
         mostrarToast('Falha crítica no sistema!', 10000);
+        console.error(error);
     }
 });

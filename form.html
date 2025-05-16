@@ -9,13 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="icons/icon-192x192.png">
+    <link rel="shortcut icon" href="favicon1.png" type="image/x-icon">
+
 </head>
 <body>
     <div class="app-container">
         <header>
-<!--             <button class="back-button" onclick="window.history.back()">← Voltar</button> -->
-                       <a href="./index.html" class="back-button">← Voltar</a>
-            
+            <a href="./index.html" class="back-button">Voltar</a>
             <h1>
                 <span class="mozup-orange">MOZUP</span> 
                 <span id="locationHeader"></span>
@@ -28,9 +28,20 @@
                 <div class="input-group">
                     <label for="empresa">Empresa</label>
                     <div class="dropdown-container">
-                        <select id="empresa" required>
-                            <option value="">Carregando empresas...</option>
-                        </select>
+                        <div class="custom-dropdown">
+                            <input type="text" 
+                                   id="empresaSearch" 
+                                   placeholder="Pesquisar ou selecionar empresa..."
+                                   class="search-input"
+                                   autocomplete="off">
+                            
+                            <div class="dropdown-content">
+                                <select id="empresa" size="5" required>
+                                    <option value="">Carregando empresas...</option>
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="add-company-box hidden">
                             <input type="text" id="novaEmpresa" placeholder="Digite o nome da nova empresa">
                             <div class="button-group">
@@ -101,6 +112,5 @@
     </div>
 
     <script src="./app.js"></script>
-
 </body>
 </html>

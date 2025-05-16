@@ -5,16 +5,20 @@
   --mozup-gray: #718096;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --radius: 8px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ========== ESTILOS BASE ========== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transition: var(--transition);
 }
 
 html {
   scroll-behavior: smooth;
+  font-size: 16px;
 }
 
 body {
@@ -32,8 +36,10 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  gap: 40px;
 }
 
+/* ========== HEADER ========== */
 header {
   text-align: center;
   padding: 2rem 0;
@@ -52,55 +58,110 @@ h1 {
   color: var(--mozup-orange);
 }
 
-.location-screen, .training-screen {
-  padding: 2rem;
-  text-align: center;
-}
-
-.location-grid, .training-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-top: 3rem;
-}
-
-.location-card, .training-card {
-  background: white;
-  padding: 2rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  border: none;
-  transition: all 0.3s ease;
-}
-
-.location-card:hover, .training-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.location-icon, .training-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
+/* ========== BOTÃO VOLTAR ========== */
 .back-button {
   position: absolute;
   left: 1rem;
-  top: 1rem;
-  background: none;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--mozup-orange) 0%, #E05E00 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
   border: none;
-  color: var(--mozup-orange);
   cursor: pointer;
-  font-size: 1.1rem;
-  padding: 0.5rem;
-  transition: opacity 0.3s ease;
+  z-index: 100;
 }
 
 .back-button:hover {
-  opacity: 0.8;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 12px rgba(255, 107, 0, 0.2);
 }
 
+.back-button:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.back-button::before {
+  content: '←';
+  font-size: 1.2em;
+  transition: transform 0.2s ease;
+}
+
+.back-button:hover::before {
+  transform: translateX(-3px);
+}
+
+/* ========== DROPDOWN ========== */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+  z-index: 90;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF6B00'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 1rem center;
+  background-size: 1.2rem;
+  cursor: pointer;
+  appearance: none;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  
+}
+
+.search-input:focus + .dropdown-content,
+.dropdown-content:hover {
+  display: block;
+}
+
+#empresa {
+  width: 100%;
+  border: none;
+  background: transparent;
+}
+
+#empresa option {
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#empresa option:hover {
+  background: var(--mozup-light);
+}
+
+#empresa option[value="__nova__"] {
+  color: var(--mozup-orange);
+  font-weight: 600;
+  background: #fff5f0;
+}
+
+/* ========== FORMULÁRIO ========== */
 #presencaForm {
   background: white;
   padding: 2rem;
@@ -118,22 +179,50 @@ label {
   font-weight: 600;
 }
 
-input, select {
+input, 
+select {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
   font-size: 1rem;
-  transition: all 0.3s ease;
 }
 
-input:focus, select:focus {
+input:focus, 
+select:focus {
   border-color: var(--mozup-orange);
   outline: none;
   box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2);
 }
 
+/* ========== BOTÃO SALVAR ========== */
+.mozup-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background: var(--mozup-orange);
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1.1rem;
+  gap: 0.8rem;
+  cursor: pointer;
+}
 
+.mozup-button:hover {
+  background: #E05E00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+}
+
+.mozup-button:disabled {
+  background: #FF9B66;
+  cursor: not-allowed;
+}
+
+/* ========== FEEDBACK VISUAL ========== */
 #toast {
   position: fixed;
   bottom: -100px;
@@ -164,6 +253,9 @@ input:focus, select:focus {
   justify-content: center;
   z-index: 1000;
 }
+.loading-hidden{
+  display: none;
+}
 
 .loading-spinner {
   animation: spin 1s linear infinite;
@@ -174,26 +266,70 @@ input:focus, select:focus {
   to { transform: rotate(360deg); }
 }
 
-footer {
-  text-align: center;
-  margin-top: auto;
-  padding: 2rem 0;
-  color: var(--mozup-gray);
-  border-top: 2px solid rgba(255, 107, 0, 0.1);
-}
-
+/* ========== RESPONSIVIDADE ========== */
 @media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+
   .app-container {
     padding: 1rem;
   }
-  
-  header h1 {
-    font-size: 1.5rem;
+
+  header {
+    padding: 1.5rem 0;
+  }
+
+  .back-button {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 0 auto 1rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .search-input {
+    padding: 0.75rem 2rem 0.75rem 0.75rem;
+    background-position: right 0.75rem center;
+  }
+
+  #presencaForm {
+    padding: 1.5rem;
   }
 }
 
-.preview-hidden {
-  display: none;
+/* ========== COMPONENTES ADICIONAIS ========== */
+.location-card, 
+.training-card {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: var(--transition);
+
+
+}
+.location-icon, .training-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.training-grid,.location-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  
+}
+h2{
+  text-align: center;
+  margin-bottom:20px ;
+}
+.location-card:hover, 
+.training-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .preview-visible {
@@ -204,169 +340,29 @@ footer {
   border-radius: var(--radius);
 }
 
-.preview-visible iframe {
-  width: 100%;
-  height: 500px;
-  border: none;
-}
-
-/* Botão Salvar de ponta a ponta */
-button[type="submit"].mozup-button {
-  display: flex;                    /* layout flexível para alinhar ícone e texto */
-  justify-content: center;          /* centraliza horizontalmente */
-  align-items: center;              /* centraliza verticalmente */
-  width: 100%;                      /* ocupa 100% da largura do container */
-  max-width: 100%;                  /* evita ultrapassar o container */
-  box-sizing: border-box;           /* inclui padding na largura total */
-  background: var(--mozup-orange);
-  color: white;
-  padding: 1rem;                    /* padding uniforme */
-  border: none;
-  border-radius: var(--radius);
-  font-size: 1.1rem;
-  gap: 0.8rem;                      /* espaço entre ícone e texto */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-/* Hover / Active */
-button[type="submit"].mozup-button:hover {
-  background: #E05E00;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
-}
-
-button[type="submit"].mozup-button:active {
-  transform: translateY(0);
-}
-
-/* Disabled / Loading */
-button[type="submit"].mozup-button:disabled {
-  background: #FF9B66;
-  cursor: not-allowed;
-}
-
-/* Ícone dentro do botão */
-button[type="submit"] .icon {
-  width: 24px;
-  height: 24px;
-  transition: transform 0.3s ease;
-}
-
-/* Texto dentro do botão */
-button[type="submit"] span {
-  position: relative;
-  z-index: 1;
-  transition: opacity 0.3s ease;
-}
-
-/* Efeito de onda ao clicar */
-button[type="submit"]::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 300px;
-  height: 300px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform 0.5s ease;
-}
-
-button[type="submit"]:active::after {
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 0;
-}
-
-.loading-hidden{
-  display: none;
-}
-
-.dropdown-container {
-  position: relative;
-  width: 100%;
-}
-
-#empresa {
-  width: 100%;
-  padding: 0.8rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  appearance: none;
-  background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FF6B00' stroke-width='2'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e") no-repeat right 0.8rem center;
-  background-size: 1rem;
-}
-
-.add-company-box {
-  display: none;
-  position: absolute;
-  width: 100%;
-  z-index: 10;
-  background: white;
-  border: 2px solid #FF6B00;
-  border-radius: 8px;
-  margin-top: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 .hidden {
   display: none !important;
 }
 
-.visible {
-  display: block !important;
+/* ========== DROPDOWN SCROLL ========== */
+.dropdown-content {
+   scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  overflow-y: auto; /* Mantém o scroll funcional */
+  max-height: 200px; /* Altura máxima importante */
 }
 
-#novaEmpresa {
-  width: 100%;
-  padding: 0.8rem;
-  border: none;
-  border-radius: 8px 8px 0 0;
+
+
+
+.icon{
+  width: 20px;
 }
 
-.button-group {
-  display: flex;
-  border-top: 1px solid #eee;
-}
+@media (max-width:800px){
+  .training-grid,.location-grid{
+  
+  grid-template-columns: 1fr;
 
-.btn-confirm, .btn-cancel {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
-
-.btn-confirm {
-  color: #4CAF50;
-  border-right: 1px solid #eee;
-}
-
-.btn-confirm:hover {
-  background: #f0fff4;
-}
-
-.btn-cancel {
-  color: #f44336;
-}
-
-.btn-cancel:hover {
-  background: #fff0f0;
-}
-
-.back-button {
-  background: #f0f0f0;
-  border: 1px solid #ccc;
-  padding: 8px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  color: #333;
-}
-
-.back-button:hover {
-  background: #e0e0e0;
 }
