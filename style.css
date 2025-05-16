@@ -366,3 +366,46 @@ h2{
 
 }
 }
+
+/* Garantir visibilidade da caixa de nova empresa */
+.add-company-box.visible {
+  display: block !important;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+p{
+  text-align: center;
+}
+.button-group {
+  display: flex;
+  border-top: 1px solid #eee;
+}
+.btn-confirm, .btn-cancel {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm {
+  color: #4CAF50;
+  border-right: 1px solid #eee;
+}
+
+.btn-confirm:hover {
+  background: #f0fff4;
+}
+
+.btn-cancel {
+  color: #f44336;
+}
+
+.btn-cancel:hover {
+  background: #fff0f0;
+}

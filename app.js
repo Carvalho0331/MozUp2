@@ -23,7 +23,7 @@ const DOM = {
     cancelarEmpresa: document.getElementById('cancelarEmpresa')
 };
 
-// ================= FUNÇÃO DE PESQUISA COMPLETA =================
+// ================= FUNÇÃO DE PESQUISA =================
 function setupSearch() {
     const search = DOM.empresaSearch;
     const dropdown = document.querySelector('.dropdown-content');
@@ -35,19 +35,17 @@ function setupSearch() {
         DOM.empresa.size = open ? 5 : 1;
         
         if(open) {
-            // Resetar filtro e focar campo
-            [...DOM.empresa.options].forEach(opt => opt.style.display = 'block');
             search.focus();
+            [...DOM.empresa.options].forEach(opt => opt.style.display = 'block');
         }
     };
 
-    // Eventos de clique
-    search.addEventListener('click', () => toggleDropdown(true));
+    search.addEventListener('click', () => !isOpen && toggleDropdown(true));
+    
     document.addEventListener('click', (e) => {
         if(!e.target.closest('.custom-dropdown')) toggleDropdown(false);
     });
 
-    // Filtro em tempo real
     search.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         [...DOM.empresa.options].forEach(opt => {
@@ -55,7 +53,6 @@ function setupSearch() {
         });
     });
 
-    // Seleção de opção
     DOM.empresa.addEventListener('click', (e) => {
         if(e.target.tagName === 'OPTION') {
             search.value = e.target.textContent;
@@ -72,14 +69,10 @@ function setupSearch() {
         }
     });
 
-    // Controle por teclado
-    search.addEventListener('keydown', (e) => {
-        if(e.key === 'Escape') toggleDropdown(false);
-        if(e.key === 'Enter') e.preventDefault();
-    });
+    search.addEventListener('keydown', (e) => e.key === 'Escape' && toggleDropdown(false));
 }
 
-// ================= FUNÇÕES DE CARREGAMENTO =================
+// ================= FUNÇÕES PRINCIPAIS =================
 async function carregarEmpresas() {
     try {
         mostrarLoading(true);
@@ -137,7 +130,6 @@ async function carregarDetalhesEmpresa() {
     }
 }
 
-// ================= FUNÇÕES DE FORMULÁRIO =================
 async function adicionarNovaEmpresa() {
     const nome = DOM.novaEmpresa.value.trim();
     if(!nome) return mostrarToast('Digite o nome da empresa');
@@ -153,9 +145,12 @@ async function adicionarNovaEmpresa() {
         if(resultado.status === 'success') {
             const newOption = new Option(nome, nome);
             DOM.empresa.insertBefore(newOption, DOM.empresa.lastChild);
+            
             DOM.empresaSearch.value = nome;
             DOM.empresa.value = nome;
             DOM.addCompanyBox.classList.remove('visible');
+            DOM.empresa.classList.remove('hidden');
+            
             mostrarToast('Empresa adicionada com sucesso!');
             await carregarDetalhesEmpresa();
         } else {
@@ -164,6 +159,9 @@ async function adicionarNovaEmpresa() {
     } catch (error) {
         mostrarToast(`Erro: ${error.message}`);
         console.error(error);
+        DOM.empresa.classList.add('hidden');
+        DOM.addCompanyBox.classList.add('visible');
+        DOM.novaEmpresa.focus();
     } finally {
         mostrarLoading(false);
     }
