@@ -24,34 +24,32 @@
 
         <main>
             <form id="presencaForm">
-                <div class="input-group">
-                    <label for="empresa">Empresa</label>
-                    <div class="dropdown-container">
-                        <div class="custom-dropdown">
-                            <input type="text" 
-                                   id="empresaSearch" 
-                                   placeholder="Pesquisar ou selecionar empresa..."
-                                   class="search-input"
-                                   autocomplete="off"
-                                   inputmode="search">
-                            
-                            <div class="dropdown-content">
-                                <select id="empresa" size="5" required>
-                                    <option value="">Carregando empresas...</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="add-company-box hidden">
-                            <input type="text" id="novaEmpresa" placeholder="Digite o nome da nova empresa">
-                            <div class="button-group">
-                                <button type="button" id="confirmarEmpresa" class="btn-confirm">✔</button>
-                                <button type="button" id="cancelarEmpresa" class="btn-cancel">✖</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+              <div class="input-group">
+  <label for="empresa">Empresa</label>
+  <div class="dropdown-container">
+    <div class="custom-dropdown">
+      <input type="text" 
+             id="empresaSearch" 
+             placeholder="Pesquisar ou selecionar empresa..."
+             class="search-input"
+             autocomplete="off">
+      
+      <div class="dropdown-content">
+        <select id="empresa" size="5" required>
+          <option value="">Carregando empresas...</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="add-company-box hidden">
+      <input type="text" id="novaEmpresa" placeholder="Digite o nome da nova empresa">
+      <div class="button-group">
+        <button type="button" id="confirmarEmpresa" class="btn-confirm">✔</button>
+        <button type="button" id="cancelarEmpresa" class="btn-cancel">✖</button>
+      </div>
+    </div>
+  </div>
+</div>
                 <div class="input-group">
                     <label for="correcao">Corrigir Nome da Empresa</label>
                     <input type="text" id="correcao" placeholder="Digite o nome correcto (opcional)">

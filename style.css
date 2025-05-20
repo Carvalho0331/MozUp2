@@ -445,3 +445,60 @@ p{
     max-height: 40vh;
   }
 }
+
+
+/* Dropdown Fix */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+  z-index: 90;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-size: 16px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dropdown-content.show {
+  display: block;
+}
+
+#empresa {
+  width: 100%;
+  border: none;
+  background: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+#empresa option {
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 1rem;
+}

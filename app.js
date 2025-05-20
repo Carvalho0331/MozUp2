@@ -26,83 +26,66 @@ const DOM = {
 
 // ================= FUNÇÃO DE PESQUISA =================
 function setupSearch() {
-    const search = DOM.empresaSearch;
-    const dropdown = DOM.dropdownContent;
-    let isOpen = false;
+  const search = DOM.empresaSearch;
+  const dropdown = DOM.dropdownContent;
+  const select = DOM.empresa;
+  let isOpen = false;
 
-    const toggleDropdown = (open) => {
-        isOpen = open;
-        dropdown.style.display = open ? 'block' : 'none';
-        DOM.empresa.size = open ? 5 : 1;
-        
-        if(open) {
-            setTimeout(() => {
-                search.focus();
-                window.scrollTo(0, 0);
-                document.body.scrollTop = 0;
-            }, 300);
-        }
-    };
+  // Função para abrir/fechar dropdown
+  const toggleDropdown = (open) => {
+    isOpen = open;
+    dropdown.classList.toggle('show', open);
+    select.size = open ? 5 : 1;
+    
+    if(open) {
+      setTimeout(() => {
+        search.focus();
+      }, 100);
+    }
+  };
 
-    // Eventos para abrir
-    ['click', 'touchstart'].forEach(event => {
-        search.addEventListener(event, (e) => {
-            if(!isOpen) {
-                e.preventDefault();
-                toggleDropdown(true);
-            }
-        }, {passive: false});
+  // Evento de clique no input
+  search.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleDropdown(!isOpen);
+  });
+
+  // Fechar ao clicar fora
+  document.addEventListener('click', (e) => {
+    if(!e.target.closest('.custom-dropdown')) {
+      toggleDropdown(false);
+    }
+  });
+
+  // Pesquisa dinâmica
+  search.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    [...select.options].forEach(opt => {
+      opt.style.display = opt.text.toLowerCase().includes(term) ? 'block' : 'none';
     });
+  });
 
-    // Eventos para fechar
-    ['click', 'touchend'].forEach(event => {
-        document.addEventListener(event, (e) => {
-            if(!e.target.closest('.custom-dropdown')) {
-                toggleDropdown(false);
-            }
-        });
-    });
+  // Seleção de item
+  select.addEventListener('change', (e) => {
+    const selectedOption = select.options[select.selectedIndex];
+    search.value = selectedOption.textContent;
+    toggleDropdown(false);
+    
+    if(selectedOption.value === '__nova__') {
+      DOM.empresa.classList.add('hidden');
+      DOM.addCompanyBox.classList.add('visible');
+      DOM.novaEmpresa.focus();
+    } else {
+      carregarDetalhesEmpresa();
+    }
+  });
 
-    search.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        [...DOM.empresa.options].forEach(opt => {
-            opt.style.display = opt.text.toLowerCase().includes(term) ? 'block' : 'none';
-        });
-    });
-
-    DOM.empresa.addEventListener('change', (e) => {
-        const selectedOption = DOM.empresa.options[DOM.empresa.selectedIndex];
-        search.value = selectedOption.textContent;
-        
-        if(selectedOption.value === '__nova__') {
-            DOM.empresa.classList.add('hidden');
-            DOM.addCompanyBox.classList.add('visible');
-            DOM.novaEmpresa.focus();
-        } else {
-            carregarDetalhesEmpresa();
-        }
-    });
-
-    // Touch handler para opções
-    dropdown.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        const option = e.target.closest('option');
-        if(option) {
-            option.selected = true;
-            DOM.empresa.dispatchEvent(new Event('change'));
-            toggleDropdown(false);
-        }
-    }, {passive: false});
-
-    // Teclado virtual
-    search.addEventListener('blur', () => {
-        if(!isOpen) return;
-        setTimeout(() => {
-            if(document.activeElement !== search && !document.activeElement.closest('.dropdown-content')) {
-                toggleDropdown(false);
-            }
-        }, 10);
-    });
+  // Teclado
+  search.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') {
+      toggleDropdown(false);
+    }
+  });
 }
 
 // ================= FUNÇÕES PRINCIPAIS =================
