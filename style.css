@@ -347,10 +347,7 @@ h2{
 
 /* ========== DROPDOWN SCROLL ========== */
 .dropdown-content {
-   scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-  overflow-y: auto; /* Mantém o scroll funcional */
-  max-height: 200px; /* Altura máxima importante */
+  
 }
 
 
