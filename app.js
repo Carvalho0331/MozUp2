@@ -321,4 +321,4 @@ async function carregarEstatisticas() {
       }]
     }
   });
-}
+} 
