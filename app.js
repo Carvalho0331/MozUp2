@@ -23,7 +23,7 @@ const DOM = {
     cancelarEmpresa: document.getElementById('cancelarEmpresa')
 };
 
-// ================= FUNÇÃO DE PESQUISA =================
+// ================= FUNÇÃO DE PESQUISA ATUALIZADA =================
 function setupSearch() {
     const search = DOM.empresaSearch;
     const dropdown = document.querySelector('.dropdown-content');
@@ -37,15 +37,43 @@ function setupSearch() {
         if(open) {
             search.focus();
             [...DOM.empresa.options].forEach(opt => opt.style.display = 'block');
+            document.body.style.overflow = 'hidden'; // Bloquear scroll
+        } else {
+            document.body.style.overflow = 'auto'; // Restaurar scroll
         }
     };
 
+    const handleSelection = (opt) => {
+        search.value = opt.textContent;
+        DOM.empresa.value = opt.value;
+        toggleDropdown(false);
+        
+        if(opt.value === '__nova__') {
+            DOM.empresa.classList.add('hidden');
+            DOM.addCompanyBox.classList.add('visible');
+            DOM.novaEmpresa.focus();
+        } else {
+            carregarDetalhesEmpresa();
+        }
+    };
+
+    // Eventos de abertura
     search.addEventListener('click', () => !isOpen && toggleDropdown(true));
-    
+    search.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        !isOpen && toggleDropdown(true);
+    });
+
+    // Eventos de fechamento
     document.addEventListener('click', (e) => {
         if(!e.target.closest('.custom-dropdown')) toggleDropdown(false);
     });
+    
+    document.addEventListener('touchstart', (e) => {
+        if(!e.target.closest('.custom-dropdown')) toggleDropdown(false);
+    });
 
+    // Filtro de pesquisa
     search.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         [...DOM.empresa.options].forEach(opt => {
@@ -53,22 +81,18 @@ function setupSearch() {
         });
     });
 
-    DOM.empresa.addEventListener('click', (e) => {
+    // Manipulação de seleção
+    const handleInteraction = (e) => {
         if(e.target.tagName === 'OPTION') {
-            search.value = e.target.textContent;
-            DOM.empresa.value = e.target.value;
-            toggleDropdown(false);
-            
-            if(e.target.value === '__nova__') {
-                DOM.empresa.classList.add('hidden');
-                DOM.addCompanyBox.classList.add('visible');
-                DOM.novaEmpresa.focus();
-            } else {
-                carregarDetalhesEmpresa();
-            }
+            handleSelection(e.target);
         }
-    });
+    };
 
+    // Eventos de seleção
+    DOM.empresa.addEventListener('click', handleInteraction);
+    DOM.empresa.addEventListener('touchend', handleInteraction);
+
+    // Tecla Escape
     search.addEventListener('keydown', (e) => e.key === 'Escape' && toggleDropdown(false));
 }
 
@@ -259,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// stats.js - Integração com Chart.js
+// ================= ESTATÍSTICAS =================
 async function carregarEstatisticas() {
   const response = await fetch(`${API_URL}?action=estatisticas&location=${LOCATION}`);
   const data = await response.json();
