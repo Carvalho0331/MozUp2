@@ -101,7 +101,7 @@ h1 {
   transform: translateX(-3px);
 }
 
-/* ========== DROPDOWN ========== */
+/* ========== DROPDOWN MOBILE-FIRST ========== */
 .custom-dropdown {
   position: relative;
   width: 100%;
@@ -109,57 +109,97 @@ h1 {
   z-index: 90;
 }
 
+.search-container {
+  position: relative;
+}
+
 .search-input {
   width: 100%;
-  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  padding: 1rem;
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
-  font-size: 1rem;
-  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF6B00'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 1rem center;
-  background-size: 1.2rem;
+  font-size: 16px;
+  background: white;
   cursor: pointer;
-  appearance: none;
+  touch-action: manipulation;
+  padding-right: 3rem;
+}
+
+.dropdown-indicator {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--mozup-orange);
+  pointer-events: none;
 }
 
 .dropdown-content {
   display: none;
-  position: absolute;
-  width: 100%;
-  max-height: 200px;
+  position: fixed;
+  width: calc(100% - 2rem);
+  max-height: 60vh;
+  left: 1rem !important;
+  bottom: 0;
   background: white;
   border: 2px solid #e2e8f0;
-  border-radius: 0 0 var(--radius) var(--radius);
-  box-shadow: var(--shadow);
-  z-index: 1000;
+  border-radius: var(--radius) var(--radius) 0 0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  z-index: 9999;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
-.dropdown-content::-webkit-scrollbar {
-  display: none;
+.dropdown-content[aria-expanded="true"] {
+  display: block;
+  animation: slideUp 0.3s ease-out;
 }
 
-#empresa {
-  width: 100%;
-  border: none;
-  background: transparent;
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
-#empresa option {
-  padding: 12px;
+.dropdown-content li {
+  padding: 1.2rem;
+  font-size: 16px;
+  color: var(--mozup-dark);
+  border-bottom: 1px solid #eee;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
 }
 
-#empresa option:hover {
+.dropdown-content li:active {
   background: var(--mozup-light);
+  transform: scale(0.98);
 }
 
-#empresa option[value="__nova__"] {
-  color: var(--mozup-orange);
+.dropdown-content li[aria-selected="true"] {
+  background: var(--mozup-light);
   font-weight: 600;
-  background: #fff5f0;
+}
+
+.dropdown-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 9998;
+}
+
+.dropdown-open .dropdown-overlay {
+  display: block;
 }
 
 /* ========== FORMULÁRIO ========== */
@@ -270,7 +310,25 @@ select:focus {
 }
 
 /* ========== RESPONSIVIDADE ========== */
-@media (max-width: 768px) {
+@media (min-width: 768px) {
+  .dropdown-content {
+    position: absolute;
+    width: 100%;
+    max-height: 300px;
+    top: 100%;
+    left: 0 !important;
+    bottom: auto;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow);
+    animation: none;
+  }
+
+  .dropdown-overlay {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
   html {
     font-size: 14px;
   }
@@ -293,111 +351,19 @@ select:focus {
     justify-content: center;
   }
 
-  /* Dropdown Mobile */
-  .dropdown-content {
-    position: fixed !important;
-    width: 90% !important;
-    max-height: 60vh !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    border-radius: var(--radius) !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
-    z-index: 9999 !important;
-  }
-
-  #empresa option {
-    padding: 16px !important;
-    min-height: 48px !important;
-    font-size: 16px !important;
-    line-height: 1.5 !important;
-  }
-
-  .search-input {
-    font-size: 16px !important;
-    padding: 1rem 3rem 1rem 1rem !important;
-  }
-
-  input, select {
-    font-size: 16px !important;
-  }
-
   #presencaForm {
     padding: 1.5rem;
   }
 }
 
-/* Dispositivos Touch */
-@media (pointer: coarse) {
-  .dropdown-content {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-
-  #empresa option {
-    min-height: 44px !important;
-    padding: 16px !important;
-  }
-}
-
 /* ========== COMPONENTES ADICIONAIS ========== */
-.location-card, 
-.training-card {
-  background: white;
-  padding: 2rem;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  transition: var(--transition);
+.add-company-box {
+  display: none;
+  margin-top: 1rem;
 }
 
-.location-icon, .training-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.training-grid,.location-grid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-h2{
-  text-align: center;
-  margin-bottom:20px ;
-}
-
-.location-card:hover, 
-.training-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.preview-visible {
-  display: block;
-  margin-top: 2rem;
-  border: 2px dashed var(--mozup-orange);
-  padding: 1rem;
-  border-radius: var(--radius);
-}
-
-.hidden {
-  display: none !important;
-}
-
-.icon{
-  width: 20px;
-}
-
-@media (max-width:800px){
-  .training-grid,.location-grid{
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Nova Empresa */
 .add-company-box.visible {
-  display: block !important;
+  display: block;
   animation: slideIn 0.3s ease;
 }
 
@@ -406,13 +372,10 @@ h2{
   to { opacity: 1; transform: translateY(0); }
 }
 
-p{
-  text-align: center;
-}
-
 .button-group {
   display: flex;
   border-top: 1px solid #eee;
+  margin-top: 1rem;
 }
 
 .btn-confirm, .btn-cancel {
@@ -422,6 +385,7 @@ p{
   background: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 1.2rem;
 }
 
 .btn-confirm {
@@ -439,4 +403,25 @@ p{
 
 .btn-cancel:hover {
   background: #fff0f0;
+}
+
+/* ========== HELPERS ========== */
+.hidden {
+  display: none !important;
+}
+
+.icon {
+  width: 20px;
+}
+
+/* ========== DISPOSITIVOS TOUCH ========== */
+@media (pointer: coarse) {
+  .dropdown-content li {
+    min-height: 56px;
+    padding: 1.2rem !important;
+  }
+
+  input, select {
+    font-size: 16px !important;
+  }
 }
