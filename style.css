@@ -372,6 +372,7 @@ select:focus {
   box-shadow: var(--shadow);
   cursor: pointer;
   transition: var(--transition);
+  border: none;
 }
 
 .location-card:hover, 
@@ -394,6 +395,12 @@ h2 {
 
 .icon {
   width: 20px;
+}
+.loading-hidden{
+  display: none;
+}
+.location-icon,.training-icon{
+  font-size: 100px;
 }
 
 .preview-visible {
