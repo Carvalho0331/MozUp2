@@ -2,7 +2,8 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>MOZUP Controle de Presenças</title>
     <meta name="theme-color" content="#FF6B00">
     <link rel="manifest" href="manifest.json">
@@ -10,7 +11,6 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="shortcut icon" href="favicon1.png" type="image/x-icon">
-
 </head>
 <body>
     <div class="app-container">
@@ -27,27 +27,34 @@
             <form id="presencaForm">
                 <div class="input-group">
                     <label for="empresa">Empresa</label>
-                    <div class="dropdown-container">
-                        <div class="custom-dropdown">
+                    <div class="custom-dropdown">
+                        <div class="search-container">
                             <input type="text" 
                                    id="empresaSearch" 
-                                   placeholder="Pesquisar ou selecionar empresa..."
                                    class="search-input"
-                                   autocomplete="off">
-                            
-                            <div class="dropdown-content">
-                                <select id="empresa" size="5" required>
-                                    <option value="">Carregando empresas...</option>
-                                </select>
-                            </div>
+                                   placeholder="Pesquisar ou selecionar empresa..."
+                                   readonly
+                                   aria-haspopup="listbox">
+                            <div class="dropdown-indicator"></div>
                         </div>
                         
-                        <div class="add-company-box hidden">
-                            <input type="text" id="novaEmpresa" placeholder="Digite o nome da nova empresa">
-                            <div class="button-group">
-                                <button type="button" id="confirmarEmpresa" class="btn-confirm">✔</button>
-                                <button type="button" id="cancelarEmpresa" class="btn-cancel">✖</button>
-                            </div>
+                        <ul id="empresaList" 
+                            class="dropdown-content" 
+                            role="listbox"
+                            aria-expanded="false">
+                            <!-- Opções carregadas via JavaScript -->
+                        </ul>
+                        
+                        <select id="empresa" name="empresa" hidden aria-hidden="true">
+                            <!-- Opções mantidas para envio do formulário -->
+                        </select>
+                    </div>
+                    
+                    <div class="add-company-box hidden">
+                        <input type="text" id="novaEmpresa" placeholder="Digite o nome da nova empresa">
+                        <div class="button-group">
+                            <button type="button" id="confirmarEmpresa" class="btn-confirm">✔</button>
+                            <button type="button" id="cancelarEmpresa" class="btn-cancel">✖</button>
                         </div>
                     </div>
                 </div>

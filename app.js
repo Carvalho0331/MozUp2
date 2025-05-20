@@ -7,6 +7,7 @@ const DOM = {
     form: document.getElementById('presencaForm'),
     empresa: document.getElementById('empresa'),
     empresaSearch: document.getElementById('empresaSearch'),
+    empresaList: document.getElementById('empresaList'),
     correcao: document.getElementById('correcao'),
     participante: document.getElementById('participante'),
     email: document.getElementById('email'),
@@ -23,88 +24,77 @@ const DOM = {
     cancelarEmpresa: document.getElementById('cancelarEmpresa')
 };
 
-// ================= FUNÇÃO DE PESQUISA ATUALIZADA =================
-function setupSearch() {
-    const search = DOM.empresaSearch;
-    const dropdown = document.querySelector('.dropdown-content');
-    let isOpen = false;
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+// ================= SISTEMA DE DROPDOWN =================
+let dropdownOpen = false;
+const dropdownOverlay = document.createElement('div');
+dropdownOverlay.className = 'dropdown-overlay';
+document.body.appendChild(dropdownOverlay);
 
-    const toggleDropdown = (shouldOpen) => {
-        isOpen = shouldOpen;
-        dropdown.style.display = shouldOpen ? 'block' : 'none';
-        DOM.empresa.size = shouldOpen ? 5 : 1;
-
-        if(shouldOpen) {
-            search.focus();
-            document.body.style.overflow = 'hidden';
-            if(isMobile) {
-                setTimeout(() => {
-                    window.scrollTo(0, search.getBoundingClientRect().top + window.scrollY - 100);
-                }, 50);
-            }
-        } else {
-            document.body.style.overflow = 'auto';
-        }
+function initDropdown() {
+    const createOptions = () => {
+        DOM.empresaList.innerHTML = '';
+        [...DOM.empresa.options].forEach(option => {
+            const li = document.createElement('li');
+            li.textContent = option.text;
+            li.dataset.value = option.value;
+            li.setAttribute('role', 'option');
+            li.addEventListener('click', () => handleSelect(option.value));
+            DOM.empresaList.appendChild(li);
+        });
     };
 
-    const handleSelect = (option) => {
-        search.value = option.textContent;
-        DOM.empresa.value = option.value;
+    const handleSelect = (value) => {
+        const option = DOM.empresa.querySelector(`option[value="${value}"]`);
+        if (!option) return;
+
+        DOM.empresa.value = value;
+        DOM.empresaSearch.value = option.text;
         toggleDropdown(false);
         
-        if(option.value === '__nova__') {
-            DOM.empresa.classList.add('hidden');
-            DOM.addCompanyBox.classList.add('visible');
-            DOM.novaEmpresa.focus();
+        if (value === '__nova__') {
+            showNewCompany();
         } else {
             carregarDetalhesEmpresa();
         }
     };
 
-    // Eventos de abertura
-    const openHandler = (e) => {
-        e.preventDefault();
-        if(!isOpen) toggleDropdown(true);
-    };
-    search.addEventListener('click', openHandler);
-    search.addEventListener('touchend', openHandler);
+    const toggleDropdown = (open) => {
+        dropdownOpen = open;
+        DOM.empresaList.setAttribute('aria-expanded', open);
+        dropdownOverlay.style.display = open ? 'block' : 'none';
+        document.body.classList.toggle('dropdown-open', open);
 
-    // Eventos de fechamento
-    const closeHandler = (e) => {
-        if(!e.target.closest('.custom-dropdown')) {
-            toggleDropdown(false);
+        if (open) {
+            createOptions();
+            DOM.empresaList.style.display = 'block';
+            DOM.empresaList.scrollTop = 0;
+        } else {
+            DOM.empresaList.style.display = 'none';
         }
     };
-    document.addEventListener('click', closeHandler);
-    document.addEventListener('touchstart', closeHandler);
 
-    // Filtro de pesquisa
-    search.addEventListener('input', (e) => {
+    // Event Listeners
+    DOM.empresaSearch.addEventListener('click', () => toggleDropdown(!dropdownOpen));
+    DOM.empresaSearch.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        toggleDropdown(!dropdownOpen);
+    });
+
+    dropdownOverlay.addEventListener('click', () => toggleDropdown(false));
+    dropdownOverlay.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        toggleDropdown(false);
+    });
+
+    DOM.empresaSearch.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        [...DOM.empresa.options].forEach(opt => {
-            opt.style.display = opt.text.toLowerCase().includes(term) ? 'block' : 'none';
+        [...DOM.empresaList.children].forEach(li => {
+            li.style.display = li.textContent.toLowerCase().includes(term) ? 'block' : 'none';
         });
     });
 
-    // Seleção mobile otimizada
-    const selectionHandler = (e) => {
-        const option = e.target.closest('option');
-        if(option) {
-            handleSelect(option);
-            if(isMobile) {
-                setTimeout(() => {
-                    window.scrollTo(0, search.getBoundingClientRect().top + window.scrollY - 50);
-                }, 100);
-            }
-        }
-    };
-    DOM.empresa.addEventListener('click', selectionHandler);
-    DOM.empresa.addEventListener('touchend', selectionHandler);
-
-    // Tecla Escape
-    search.addEventListener('keydown', (e) => {
-        if(e.key === 'Escape') toggleDropdown(false);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && dropdownOpen) toggleDropdown(false);
     });
 }
 
@@ -122,7 +112,9 @@ async function carregarEmpresas() {
         const empresas = await response.json();
         DOM.empresa.innerHTML = empresas.map(e => 
             `<option value="${e}">${e}</option>`
-        ).join('') + '<option value="__nova__" style="color:#FF6B00;font-weight:500">✚ Adicionar nova empresa</option>';
+        ).join('') + '<option value="__nova__">✚ Adicionar nova empresa</option>';
+
+        initDropdown();
 
         if(empresas.length > 0) {
             DOM.empresaSearch.value = empresas[0];
@@ -166,6 +158,12 @@ async function carregarDetalhesEmpresa() {
     }
 }
 
+function showNewCompany() {
+    DOM.empresa.classList.add('hidden');
+    DOM.addCompanyBox.classList.add('visible');
+    DOM.novaEmpresa.focus();
+}
+
 async function adicionarNovaEmpresa() {
     const nome = DOM.novaEmpresa.value.trim();
     if(!nome) return mostrarToast('Digite o nome da empresa');
@@ -181,6 +179,7 @@ async function adicionarNovaEmpresa() {
         if(resultado.status === 'success') {
             const newOption = new Option(nome, nome);
             DOM.empresa.insertBefore(newOption, DOM.empresa.lastChild);
+            initDropdown();
             
             DOM.empresaSearch.value = nome;
             DOM.empresa.value = nome;
@@ -287,9 +286,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     try {
         await carregarEmpresas();
-        setupSearch();
         DOM.form.addEventListener('submit', enviarFormulario);
-        
+
         // Fix para iOS
         if(/iPhone|iPad/i.test(navigator.userAgent)) {
             document.querySelectorAll('input, select').forEach(el => {
@@ -305,20 +303,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(error);
     }
 });
-
-// ================= ESTATÍSTICAS =================
-async function carregarEstatisticas() {
-  const response = await fetch(`${API_URL}?action=estatisticas&location=${LOCATION}`);
-  const data = await response.json();
-  
-  new Chart(document.getElementById('generoChart'), {
-    type: 'pie',
-    data: {
-      labels: ['Masculino', 'Feminino'],
-      datasets: [{
-        data: [data.masculino, data.feminino],
-        backgroundColor: ['#FF6B00', '#2D3748']
-      }]
-    }
-  });
-} 
