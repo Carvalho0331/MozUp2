@@ -13,7 +13,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  transition: var(--transition);  
+  transition: var(--transition);
 }
 
 html {
@@ -27,6 +27,7 @@ body {
   color: var(--mozup-dark);
   line-height: 1.6;
   min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app-container {
@@ -124,19 +125,18 @@ h1 {
   position: absolute;
   width: 100%;
   max-height: 200px;
-
   background: white;
   border: 2px solid #e2e8f0;
-  border-top: none;
   border-radius: 0 0 var(--radius) var(--radius);
   box-shadow: var(--shadow);
   z-index: 1000;
-  
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.search-input:focus + .dropdown-content,
-.dropdown-content:hover {
-  display: block;
+.dropdown-content::-webkit-scrollbar {
+  display: none;
 }
 
 #empresa {
@@ -186,6 +186,7 @@ select {
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
   font-size: 1rem;
+  touch-action: manipulation;
 }
 
 input:focus, 
@@ -253,6 +254,7 @@ select:focus {
   justify-content: center;
   z-index: 1000;
 }
+
 .loading-hidden{
   display: none;
 }
@@ -290,13 +292,46 @@ select:focus {
     justify-content: center;
   }
 
+  /* Dropdown Mobile */
+  .dropdown-content {
+    position: fixed;
+    width: 90%;
+    max-height: 60vh;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+
+  #empresa option {
+    padding: 16px;
+    min-height: 48px;
+    font-size: 16px;
+  }
+
   .search-input {
-    padding: 0.75rem 2rem 0.75rem 0.75rem;
-    background-position: right 0.75rem center;
+    font-size: 16px;
+    padding: 1rem 3rem 1rem 1rem !important;
+  }
+
+  input, select {
+    font-size: 16px !important;
   }
 
   #presencaForm {
     padding: 1.5rem;
+  }
+}
+
+@media (pointer: coarse) {
+  #empresa option {
+    padding: 16px !important;
+    min-height: 44px !important;
+  }
+  
+  .dropdown-content {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -309,24 +344,24 @@ select:focus {
   box-shadow: var(--shadow);
   cursor: pointer;
   transition: var(--transition);
-  border: none;
-
-
 }
+
 .location-icon, .training-icon {
   font-size: 2.5rem;
   margin-bottom: 1rem;
 }
+
 .training-grid,.location-grid{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  
 }
+
 h2{
   text-align: center;
   margin-bottom:20px ;
 }
+
 .location-card:hover, 
 .training-card:hover {
   transform: translateY(-5px);
@@ -345,27 +380,17 @@ h2{
   display: none !important;
 }
 
-/* ========== DROPDOWN SCROLL ========== */
-.dropdown-content {
-  
-}
-
-
-
-
 .icon{
   width: 20px;
 }
 
 @media (max-width:800px){
   .training-grid,.location-grid{
-  
-  grid-template-columns: 1fr;
-
-}
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Garantir visibilidade da caixa de nova empresa */
+/* Nova Empresa */
 .add-company-box.visible {
   display: block !important;
   animation: slideIn 0.3s ease;
@@ -375,13 +400,16 @@ h2{
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 p{
   text-align: center;
 }
+
 .button-group {
   display: flex;
   border-top: 1px solid #eee;
 }
+
 .btn-confirm, .btn-cancel {
   flex: 1;
   padding: 0.5rem;
