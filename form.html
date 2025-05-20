@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MOZUP Controle de Presenças</title>
     <meta name="theme-color" content="#FF6B00">
     <link rel="manifest" href="manifest.json">
@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="shortcut icon" href="favicon1.png" type="image/x-icon">
-
 </head>
 <body>
     <div class="app-container">
@@ -33,7 +32,8 @@
                                    id="empresaSearch" 
                                    placeholder="Pesquisar ou selecionar empresa..."
                                    class="search-input"
-                                   autocomplete="off">
+                                   autocomplete="off"
+                                   inputmode="search">
                             
                             <div class="dropdown-content">
                                 <select id="empresa" size="5" required>
@@ -94,7 +94,6 @@
                     <span id="btnLoading" class="loading-hidden">A Salvar...</span>
                 </button>
             </form>
-            
         </main>
 
         <footer>
