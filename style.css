@@ -27,8 +27,6 @@ body {
   color: var(--mozup-dark);
   line-height: 1.6;
   min-height: 100vh;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
 }
 
 .app-container {
@@ -101,7 +99,7 @@ h1 {
   transform: translateX(-3px);
 }
 
-/* ========== DROPDOWN MOBILE-FIRST ========== */
+/* ========== DROPDOWN ========== */
 .custom-dropdown {
   position: relative;
   width: 100%;
@@ -109,97 +107,58 @@ h1 {
   z-index: 90;
 }
 
-.search-container {
-  position: relative;
-}
-
 .search-input {
   width: 100%;
-  padding: 1rem;
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
-  font-size: 16px;
-  background: white;
+  font-size: 1rem;
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF6B00'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 1rem center;
+  background-size: 1.2rem;
   cursor: pointer;
-  touch-action: manipulation;
-  padding-right: 3rem;
-}
-
-.dropdown-indicator {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid var(--mozup-orange);
-  pointer-events: none;
+  appearance: none;
 }
 
 .dropdown-content {
   display: none;
-  position: fixed;
-  width: calc(100% - 2rem);
-  max-height: 60vh;
-  left: 1rem !important;
-  bottom: 0;
+  position: absolute;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
   background: white;
   border: 2px solid #e2e8f0;
-  border-radius: var(--radius) var(--radius) 0 0;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-  overflow-y: auto;
-  z-index: 9999;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  
 }
 
-.dropdown-content[aria-expanded="true"] {
+.search-input:focus + .dropdown-content,
+.dropdown-content:hover {
   display: block;
-  animation: slideUp 0.3s ease-out;
 }
 
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+#empresa {
+  width: 100%;
+  border: none;
+  background: transparent;
 }
 
-.dropdown-content li {
-  padding: 1.2rem;
-  font-size: 16px;
-  color: var(--mozup-dark);
-  border-bottom: 1px solid #eee;
+#empresa option {
+  padding: 12px;
   cursor: pointer;
-  transition: all 0.2s;
-  min-height: 56px;
-  display: flex;
-  align-items: center;
+  transition: background 0.2s;
 }
 
-.dropdown-content li:active {
+#empresa option:hover {
   background: var(--mozup-light);
-  transform: scale(0.98);
 }
 
-.dropdown-content li[aria-selected="true"] {
-  background: var(--mozup-light);
+#empresa option[value="__nova__"] {
+  color: var(--mozup-orange);
   font-weight: 600;
-}
-
-.dropdown-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 9998;
-}
-
-.dropdown-open .dropdown-overlay {
-  display: block;
+  background: #fff5f0;
 }
 
 /* ========== FORMULÁRIO ========== */
@@ -227,7 +186,6 @@ select {
   border: 2px solid #e2e8f0;
   border-radius: var(--radius);
   font-size: 1rem;
-  touch-action: manipulation;
 }
 
 input:focus, 
@@ -295,7 +253,6 @@ select:focus {
   justify-content: center;
   z-index: 1000;
 }
-
 .loading-hidden{
   display: none;
 }
@@ -310,25 +267,7 @@ select:focus {
 }
 
 /* ========== RESPONSIVIDADE ========== */
-@media (min-width: 768px) {
-  .dropdown-content {
-    position: absolute;
-    width: 100%;
-    max-height: 300px;
-    top: 100%;
-    left: 0 !important;
-    bottom: auto;
-    border-radius: 0 0 var(--radius) var(--radius);
-    box-shadow: var(--shadow);
-    animation: none;
-  }
-
-  .dropdown-overlay {
-    display: none !important;
-  }
-}
-
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   html {
     font-size: 14px;
   }
@@ -351,19 +290,86 @@ select:focus {
     justify-content: center;
   }
 
+  .search-input {
+    padding: 0.75rem 2rem 0.75rem 0.75rem;
+    background-position: right 0.75rem center;
+  }
+
   #presencaForm {
     padding: 1.5rem;
   }
 }
 
 /* ========== COMPONENTES ADICIONAIS ========== */
-.add-company-box {
-  display: none;
-  margin-top: 1rem;
+.location-card, 
+.training-card {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: var(--transition);
+
+
+}
+.location-icon, .training-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.training-grid,.location-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  
+}
+h2{
+  text-align: center;
+  margin-bottom:20px ;
+}
+.location-card:hover, 
+.training-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
-.add-company-box.visible {
+.preview-visible {
   display: block;
+  margin-top: 2rem;
+  border: 2px dashed var(--mozup-orange);
+  padding: 1rem;
+  border-radius: var(--radius);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ========== DROPDOWN SCROLL ========== */
+.dropdown-content {
+   scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  overflow-y: auto; /* Mantém o scroll funcional */
+  max-height: 200px; /* Altura máxima importante */
+}
+
+
+
+
+.icon{
+  width: 20px;
+}
+
+@media (max-width:800px){
+  .training-grid,.location-grid{
+  
+  grid-template-columns: 1fr;
+
+}
+}
+
+/* Garantir visibilidade da caixa de nova empresa */
+.add-company-box.visible {
+  display: block !important;
   animation: slideIn 0.3s ease;
 }
 
@@ -371,13 +377,13 @@ select:focus {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
+p{
+  text-align: center;
+}
 .button-group {
   display: flex;
   border-top: 1px solid #eee;
-  margin-top: 1rem;
 }
-
 .btn-confirm, .btn-cancel {
   flex: 1;
   padding: 0.5rem;
@@ -385,7 +391,6 @@ select:focus {
   background: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 1.2rem;
 }
 
 .btn-confirm {
@@ -403,25 +408,4 @@ select:focus {
 
 .btn-cancel:hover {
   background: #fff0f0;
-}
-
-/* ========== HELPERS ========== */
-.hidden {
-  display: none !important;
-}
-
-.icon {
-  width: 20px;
-}
-
-/* ========== DISPOSITIVOS TOUCH ========== */
-@media (pointer: coarse) {
-  .dropdown-content li {
-    min-height: 56px;
-    padding: 1.2rem !important;
-  }
-
-  input, select {
-    font-size: 16px !important;
-  }
 }
