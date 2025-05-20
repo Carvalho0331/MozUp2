@@ -24,61 +24,48 @@ const DOM = {
     dropdownEmpresas: document.getElementById('dropdownEmpresas')
 };
 
+// ================= SISTEMA DE EVENTOS =================
+let isTouchDevice = false;
+
+function initEventListeners() {
+    document.addEventListener('touchstart', () => isTouchDevice = true, { once: true });
+
+    function handleInteraction(e) {
+        e.preventDefault();
+        const item = e.target.closest('.dropdown-item');
+        if(item) selectEmpresa(item.dataset.value);
+    }
+
+    DOM.dropdownEmpresas.addEventListener('mousedown', handleInteraction);
+    DOM.dropdownEmpresas.addEventListener('touchstart', handleInteraction);
+}
+
 // ================= DROPDOWN BUSCÁVEL =================
 function setupSearch() {
     const search = DOM.empresaSearch;
-    const dropdown = DOM.dropdownEmpresas;
     let isOpen = false;
 
-    const toggleDropdown = (open) => {
-        isOpen = open;
-        dropdown.style.display = open ? 'block' : 'none';
-        if(open) search.focus();
+    const toggleDropdown = (show) => {
+        isOpen = show;
+        DOM.dropdownEmpresas.style.display = show ? 'block' : 'none';
+        if(show) search.focus();
     };
 
-    // Eventos de abertura
     search.addEventListener('focus', () => toggleDropdown(true));
     search.addEventListener('click', () => toggleDropdown(true));
-
-    // Fechar ao clicar fora
+    
     document.addEventListener('click', (e) => {
         if(!e.target.closest('.dropdown-container')) toggleDropdown(false);
     });
 
-    // Filtro em tempo real
     search.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        const items = document.querySelectorAll('.dropdown-item');
-        
-        items.forEach(item => {
-            const text = item.textContent.toLowerCase();
-            item.style.display = text.includes(term) ? 'block' : 'none';
+        DOM.dropdownEmpresas.querySelectorAll('.dropdown-item').forEach(item => {
+            item.style.display = item.textContent.toLowerCase().includes(term) ? 'block' : 'none';
         });
     });
 
-    // Navegação por teclado
-    search.addEventListener('keydown', (e) => {
-        if(e.key === 'Escape') toggleDropdown(false);
-    });
-}
-
-function selectEmpresa(value) {
-    DOM.empresaSearch.value = value;
-    DOM.empresa.value = value;
-    DOM.dropdownEmpresas.style.display = 'none';
-    
-    if(value !== '__nova__') {
-        carregarDetalhesEmpresa();
-    } else {
-        showAddCompany();
-    }
-}
-
-function showAddCompany() {
-    DOM.empresaSearch.value = '';
-    DOM.dropdownEmpresas.style.display = 'none';
-    DOM.addCompanyBox.classList.add('visible');
-    DOM.novaEmpresa.focus();
+    search.addEventListener('keydown', (e) => e.key === 'Escape' && toggleDropdown(false));
 }
 
 // ================= FUNÇÕES PRINCIPAIS =================
@@ -93,23 +80,7 @@ async function carregarEmpresas() {
         if(!response.ok) throw new Error('Erro ao carregar empresas');
         
         const empresas = await response.json();
-        const dropdownContent = empresas.map(empresa => `
-            <div class="dropdown-item" 
-                 data-value="${empresa}"
-                 onclick="selectEmpresa('${empresa}')">
-                ${empresa}
-            </div>
-        `).join('') + `
-            <div class="dropdown-item" 
-                 data-value="__nova__" 
-                 style="color:var(--mozup-orange);font-weight:500"
-                 onclick="selectEmpresa('__nova__')">
-                ✚ Adicionar nova empresa
-            </div>
-        `;
-
-        DOM.dropdownEmpresas.innerHTML = dropdownContent;
-        DOM.empresa.innerHTML = empresas.map(e => `<option value="${e}">${e}</option>`).join('');
+        atualizarDropdown(empresas);
 
         if(empresas.length > 0) {
             DOM.empresaSearch.value = empresas[0];
@@ -122,6 +93,48 @@ async function carregarEmpresas() {
         console.error(error);
     } finally {
         mostrarLoading(false);
+    }
+}
+
+function atualizarDropdown(empresas) {
+    DOM.dropdownEmpresas.innerHTML = empresas.map(empresa => `
+        <div class="dropdown-item" 
+             data-value="${empresa}"
+             onclick="selectEmpresa('${empresa}')">
+            ${empresa}
+        </div>
+    `).join('') + `
+        <div class="dropdown-item" 
+             data-value="__nova__" 
+             style="color:var(--mozup-orange);font-weight:500"
+             onclick="handleAddCompany(event)">
+            ✚ Adicionar nova empresa
+        </div>
+    `;
+
+    DOM.empresa.innerHTML = empresas.map(e => `<option value="${e}">${e}</option>`).join('');
+}
+
+function handleAddCompany(e) {
+    e.stopPropagation();
+    selectEmpresa('__nova__');
+}
+
+function selectEmpresa(value) {
+    DOM.dropdownEmpresas.style.display = 'none';
+    
+    if(value === '__nova__') {
+        DOM.empresaSearch.value = '';
+        DOM.addCompanyBox.classList.add('visible');
+        DOM.novaEmpresa.focus();
+        if(!isTouchDevice) {
+            DOM.addCompanyBox.style.top = `${DOM.empresaSearch.offsetTop + DOM.empresaSearch.offsetHeight + 5}px`;
+            DOM.addCompanyBox.style.left = `${DOM.empresaSearch.offsetLeft}px`;
+        }
+    } else {
+        DOM.empresaSearch.value = value;
+        DOM.empresa.value = value;
+        carregarDetalhesEmpresa();
     }
 }
 
@@ -159,19 +172,33 @@ async function adicionarNovaEmpresa() {
 
     try {
         mostrarLoading(true);
-        let url = `${API_URL}?action=addEmpresa&location=${LOCATION}&empresa=${encodeURIComponent(nome)}`;
+        let url = `${API_URL}?action=addEmpresa&location=${LOCATION}&empresa=${encodeURIComponent(nome)}&nocache=${Math.random()}`;
         if(LOCATION !== 'maputo' && TRAINING) url += `&training=${TRAINING}`;
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            redirect: 'follow',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8',
+            }
+        });
+        
         const resultado = await response.json();
         
         if(resultado.status === 'success') {
             const newOption = new Option(nome, nome);
             DOM.empresa.insertBefore(newOption, DOM.empresa.lastChild);
             
+            const newItem = document.createElement('div');
+            newItem.className = 'dropdown-item';
+            newItem.setAttribute('data-value', nome);
+            newItem.innerHTML = nome;
+            newItem.onclick = () => selectEmpresa(nome);
+            DOM.dropdownEmpresas.insertBefore(newItem, DOM.dropdownEmpresas.lastChild);
+            
             DOM.empresaSearch.value = nome;
             DOM.empresa.value = nome;
             DOM.addCompanyBox.classList.remove('visible');
+            DOM.novaEmpresa.value = '';
             
             mostrarToast('Empresa adicionada com sucesso!');
             await carregarDetalhesEmpresa();
@@ -256,22 +283,21 @@ function alterarEstadoBotao(carregando) {
     DOM.form.querySelector('button').disabled = carregando;
 }
 
-// ================= EVENT LISTENERS =================
-DOM.confirmarEmpresa.addEventListener('click', adicionarNovaEmpresa);
-DOM.cancelarEmpresa.addEventListener('click', () => {
-    DOM.addCompanyBox.classList.remove('visible');
-    DOM.empresaSearch.value = DOM.empresa.value;
-    DOM.novaEmpresa.value = '';
-});
-
 // ================= INICIALIZAÇÃO =================
 document.addEventListener('DOMContentLoaded', async () => {
     if(!validarParametros()) return;
     
     try {
+        initEventListeners();
         await carregarEmpresas();
         setupSearch();
         DOM.form.addEventListener('submit', enviarFormulario);
+        DOM.confirmarEmpresa.addEventListener('click', adicionarNovaEmpresa);
+        DOM.cancelarEmpresa.addEventListener('click', () => {
+            DOM.addCompanyBox.classList.remove('visible');
+            DOM.empresaSearch.value = DOM.empresa.value;
+            DOM.novaEmpresa.value = '';
+        });
     } catch (error) {
         mostrarToast('Falha crítica no sistema!', 10000);
         console.error(error);
