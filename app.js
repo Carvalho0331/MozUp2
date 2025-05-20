@@ -3,10 +3,13 @@ const urlParams = new URLSearchParams(window.location.search);
 const LOCATION = urlParams.get('location');
 const TRAINING = urlParams.get('training');
 
+// Elementos DOM
 const DOM = {
     form: document.getElementById('presencaForm'),
-    empresa: document.getElementById('empresa'),
-    empresaSearch: document.getElementById('empresaSearch'),
+    selectButton: document.getElementById('selectButton'),
+    dropdown: document.getElementById('dropdown'),
+    searchInput: document.getElementById('searchInput'),
+    optionsList: document.getElementById('optionsList'),
     correcao: document.getElementById('correcao'),
     participante: document.getElementById('participante'),
     email: document.getElementById('email'),
@@ -20,73 +23,16 @@ const DOM = {
     addCompanyBox: document.querySelector('.add-company-box'),
     novaEmpresa: document.getElementById('novaEmpresa'),
     confirmarEmpresa: document.getElementById('confirmarEmpresa'),
-    cancelarEmpresa: document.getElementById('cancelarEmpresa'),
-    dropdownContent: document.querySelector('.dropdown-content')
+    cancelarEmpresa: document.getElementById('cancelarEmpresa')
 };
 
-// ================= FUNÇÃO DE PESQUISA =================
-function setupSearch() {
-  const search = DOM.empresaSearch;
-  const dropdown = DOM.dropdownContent;
-  const select = DOM.empresa;
-  let isOpen = false;
-
-  // Função para abrir/fechar dropdown
-  const toggleDropdown = (open) => {
-    isOpen = open;
-    dropdown.classList.toggle('show', open);
-    select.size = open ? 5 : 1;
-    
-    if(open) {
-      setTimeout(() => {
-        search.focus();
-      }, 100);
-    }
-  };
-
-  // Evento de clique no input
-  search.addEventListener('click', (e) => {
-    e.preventDefault();
-    toggleDropdown(!isOpen);
-  });
-
-  // Fechar ao clicar fora
-  document.addEventListener('click', (e) => {
-    if(!e.target.closest('.custom-dropdown')) {
-      toggleDropdown(false);
-    }
-  });
-
-  // Pesquisa dinâmica
-  search.addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-    [...select.options].forEach(opt => {
-      opt.style.display = opt.text.toLowerCase().includes(term) ? 'block' : 'none';
-    });
-  });
-
-  // Seleção de item
-  select.addEventListener('change', (e) => {
-    const selectedOption = select.options[select.selectedIndex];
-    search.value = selectedOption.textContent;
-    toggleDropdown(false);
-    
-    if(selectedOption.value === '__nova__') {
-      DOM.empresa.classList.add('hidden');
-      DOM.addCompanyBox.classList.add('visible');
-      DOM.novaEmpresa.focus();
-    } else {
-      carregarDetalhesEmpresa();
-    }
-  });
-
-  // Teclado
-  search.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape') {
-      toggleDropdown(false);
-    }
-  });
-}
+// Estado do aplicativo
+let state = {
+    empresas: [],
+    selectedCompany: null,
+    isDropdownOpen: false,
+    isLoading: false
+};
 
 // ================= FUNÇÕES PRINCIPAIS =================
 async function carregarEmpresas() {
@@ -99,15 +45,11 @@ async function carregarEmpresas() {
         const response = await fetch(url);
         if(!response.ok) throw new Error('Erro ao carregar empresas');
         
-        const empresas = await response.json();
-        DOM.empresa.innerHTML = empresas.map(e => 
-            `<option value="${e}">${e}</option>`
-        ).join('') + '<option value="__nova__" style="color:#FF6B00;font-weight:500">✚ Adicionar nova empresa</option>';
-
-        if(empresas.length > 0) {
-            DOM.empresaSearch.value = empresas[0];
-            DOM.empresa.value = empresas[0];
-            await carregarDetalhesEmpresa();
+        state.empresas = await response.json();
+        renderizarOpcoes(state.empresas);
+        
+        if(state.empresas.length > 0) {
+            selecionarEmpresa(state.empresas[0]);
         }
 
     } catch (error) {
@@ -118,25 +60,99 @@ async function carregarEmpresas() {
     }
 }
 
+function renderizarOpcoes(empresas) {
+    DOM.optionsList.innerHTML = empresas.map(empresa => `
+        <li class="option-item" 
+            data-value="${empresa}" 
+            role="option"
+            tabindex="0">
+            ${empresa}
+        </li>
+    `).join('') + `
+        <li class="option-item" 
+            data-value="__nova__" 
+            style="color: var(--mozup-orange); font-weight: 500"
+            role="option"
+            tabindex="0">
+            ✚ Adicionar nova empresa
+        </li>
+    `;
+}
+
+// ================= CONTROLE DO DROPDOWN =================
+function toggleDropdown(abrir) {
+    state.isDropdownOpen = abrir;
+    DOM.dropdown.classList.toggle('visible', abrir);
+    DOM.selectButton.setAttribute('aria-expanded', abrir);
+
+    if(abrir) {
+        DOM.searchInput.focus();
+        window.scrollTo(0, 0);
+        adicionarEventosDropdown();
+    } else {
+        removerEventosDropdown();
+    }
+}
+
+function adicionarEventosDropdown() {
+    document.addEventListener('click', handleClickFora);
+    document.addEventListener('keydown', handleTeclado);
+    DOM.optionsList.addEventListener('touchstart', handleToque, {passive: true});
+}
+
+function removerEventosDropdown() {
+    document.removeEventListener('click', handleClickFora);
+    document.removeEventListener('keydown', handleTeclado);
+    DOM.optionsList.removeEventListener('touchstart', handleToque);
+}
+
+function handleClickFora(e) {
+    if(!e.target.closest('.select-container')) {
+        toggleDropdown(false);
+    }
+}
+
+function handleTeclado(e) {
+    if(e.key === 'Escape') toggleDropdown(false);
+}
+
+function handleToque(e) {
+    const option = e.target.closest('.option-item');
+    if(option) handleSelecao(option);
+}
+
+// ================= SELEÇÃO DE EMPRESA =================
+function selecionarEmpresa(empresa) {
+    state.selectedCompany = empresa;
+    DOM.selectButton.textContent = empresa;
+    DOM.selectButton.setAttribute('data-value', empresa);
+}
+
+function handleSelecao(option) {
+    const valor = option.dataset.value;
+    
+    if(valor === '__nova__') {
+        DOM.addCompanyBox.classList.add('visible');
+        DOM.novaEmpresa.focus();
+        toggleDropdown(false);
+    } else {
+        selecionarEmpresa(option.textContent);
+        carregarDetalhesEmpresa();
+        toggleDropdown(false);
+    }
+}
+
 async function carregarDetalhesEmpresa() {
     try {
-        const empresa = DOM.empresa.value;
-        if(!empresa || empresa === '__nova__') return;
-
         mostrarLoading(true);
-        let url = `${API_URL}?action=getDetalhes&location=${LOCATION}&empresa=${encodeURIComponent(empresa)}`;
+        let url = `${API_URL}?action=getDetalhes&location=${LOCATION}&empresa=${encodeURIComponent(state.selectedCompany)}`;
         if(LOCATION !== 'maputo' && TRAINING) url += `&training=${TRAINING}`;
 
         const response = await fetch(url);
         if(!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
         
         const detalhes = await response.json();
-        ['participante', 'email', 'contacto', 'funcao', 'genero'].forEach(id => {
-            document.getElementById(id).value = detalhes[id] || '';
-        });
-
-        DOM.form.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.3)';
-        setTimeout(() => DOM.form.style.boxShadow = 'var(--shadow)', 1000);
+        preencherCampos(detalhes);
 
     } catch (error) {
         mostrarToast(`Erro: ${error.message}`, 5000);
@@ -146,6 +162,14 @@ async function carregarDetalhesEmpresa() {
     }
 }
 
+function preencherCampos(detalhes) {
+    ['participante', 'email', 'contacto', 'funcao'].forEach(id => {
+        DOM[id].value = detalhes[id] || '';
+    });
+    DOM.genero.value = detalhes.genero || '';
+}
+
+// ================= NOVA EMPRESA =================
 async function adicionarNovaEmpresa() {
     const nome = DOM.novaEmpresa.value.trim();
     if(!nome) return mostrarToast('Digite o nome da empresa');
@@ -159,39 +183,33 @@ async function adicionarNovaEmpresa() {
         const resultado = await response.json();
         
         if(resultado.status === 'success') {
-            const newOption = new Option(nome, nome);
-            DOM.empresa.insertBefore(newOption, DOM.empresa.lastChild);
-            
-            DOM.empresaSearch.value = nome;
-            DOM.empresa.value = nome;
+            state.empresas.push(nome);
+            renderizarOpcoes(state.empresas);
+            selecionarEmpresa(nome);
             DOM.addCompanyBox.classList.remove('visible');
-            DOM.empresa.classList.remove('hidden');
-            
             mostrarToast('Empresa adicionada com sucesso!');
-            await carregarDetalhesEmpresa();
         } else {
             throw new Error(resultado.message);
         }
     } catch (error) {
         mostrarToast(`Erro: ${error.message}`);
         console.error(error);
-        DOM.empresa.classList.add('hidden');
-        DOM.addCompanyBox.classList.add('visible');
         DOM.novaEmpresa.focus();
     } finally {
         mostrarLoading(false);
     }
 }
 
+// ================= ENVIO DO FORMULÁRIO =================
 async function enviarFormulario(e) {
     e.preventDefault();
-    if(!validarParametros()) return;
+    if(!validarParametros() || !validarFormulario()) return;
 
     const dados = {
         action: 'salvarDados',
         location: LOCATION,
-        empresaOriginal: DOM.empresa.value.trim(),
-        empresa: DOM.correcao.value.trim() || DOM.empresa.value.trim(),
+        empresaOriginal: state.selectedCompany,
+        empresa: DOM.correcao.value.trim() || state.selectedCompany,
         participante: DOM.participante.value.trim(),
         email: DOM.email.value.trim(),
         contacto: DOM.contacto.value.trim(),
@@ -211,8 +229,7 @@ async function enviarFormulario(e) {
         
         if(resultado.status !== 'success') throw new Error(resultado.message);
 
-        DOM.form.reset();
-        DOM.correcao.value = '';
+        limparFormulario();
         mostrarToast('Dados salvos com sucesso!');
         setTimeout(carregarEmpresas, 1000);
 
@@ -225,11 +242,24 @@ async function enviarFormulario(e) {
     }
 }
 
+function limparFormulario() {
+    DOM.form.reset();
+    DOM.correcao.value = '';
+}
+
 // ================= FUNÇÕES AUXILIARES =================
 function validarParametros() {
     if(!LOCATION) {
         mostrarToast('Localização não especificada!', 5000);
         window.location.href = 'index.html';
+        return false;
+    }
+    return true;
+}
+
+function validarFormulario() {
+    if(!state.selectedCompany || state.selectedCompany === 'Selecione uma empresa') {
+        mostrarToast('Selecione uma empresa válida');
         return false;
     }
     return true;
@@ -243,6 +273,7 @@ function mostrarToast(mensagem, duracao = 3000) {
 
 function mostrarLoading(ativo) {
     DOM.loading.style.display = ativo ? 'flex' : 'none';
+    state.isLoading = ativo;
 }
 
 function alterarEstadoBotao(carregando) {
@@ -252,14 +283,38 @@ function alterarEstadoBotao(carregando) {
 }
 
 // ================= EVENT LISTENERS =================
-DOM.confirmarEmpresa.addEventListener('click', adicionarNovaEmpresa);
-DOM.cancelarEmpresa.addEventListener('click', () => {
-    DOM.empresa.classList.remove('hidden');
-    DOM.addCompanyBox.classList.remove('visible');
-    DOM.novaEmpresa.value = '';
-    DOM.empresa.value = '';
-    DOM.empresaSearch.value = '';
-});
+function configurarEventos() {
+    // Dropdown
+    DOM.selectButton.addEventListener('click', () => toggleDropdown(!state.isDropdownOpen));
+    DOM.selectButton.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' ') toggleDropdown(true);
+    });
+    
+    // Pesquisa
+    DOM.searchInput.addEventListener('input', (e) => {
+        const termo = e.target.value.toLowerCase();
+        const filtradas = state.empresas.filter(empresa => 
+            empresa.toLowerCase().includes(termo)
+        );
+        renderizarOpcoes(filtradas);
+    });
+
+    // Seleção de opções
+    DOM.optionsList.addEventListener('click', (e) => {
+        const option = e.target.closest('.option-item');
+        if(option) handleSelecao(option);
+    });
+
+    // Nova empresa
+    DOM.confirmarEmpresa.addEventListener('click', adicionarNovaEmpresa);
+    DOM.cancelarEmpresa.addEventListener('click', () => {
+        DOM.addCompanyBox.classList.remove('visible');
+        DOM.novaEmpresa.value = '';
+    });
+
+    // Formulário
+    DOM.form.addEventListener('submit', enviarFormulario);
+}
 
 // ================= INICIALIZAÇÃO =================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -267,27 +322,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     try {
         await carregarEmpresas();
-        setupSearch();
-        DOM.form.addEventListener('submit', enviarFormulario);
+        configurarEventos();
     } catch (error) {
         mostrarToast('Falha crítica no sistema!', 10000);
         console.error(error);
     }
 });
-
-// stats.js - Integração com Chart.js
-async function carregarEstatisticas() {
-  const response = await fetch(`${API_URL}?action=estatisticas&location=${LOCATION}`);
-  const data = await response.json();
-  
-  new Chart(document.getElementById('generoChart'), {
-    type: 'pie',
-    data: {
-      labels: ['Masculino', 'Feminino'],
-      datasets: [{
-        data: [data.masculino, data.feminino],
-        backgroundColor: ['#FF6B00', '#2D3748']
-      }]
-    }
-  });
-}
