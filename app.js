@@ -20,56 +20,65 @@ const DOM = {
     addCompanyBox: document.querySelector('.add-company-box'),
     novaEmpresa: document.getElementById('novaEmpresa'),
     confirmarEmpresa: document.getElementById('confirmarEmpresa'),
-    cancelarEmpresa: document.getElementById('cancelarEmpresa')
+    cancelarEmpresa: document.getElementById('cancelarEmpresa'),
+    dropdownEmpresas: document.getElementById('dropdownEmpresas')
 };
 
-// ================= FUNÇÃO DE PESQUISA =================
+// ================= DROPDOWN BUSCÁVEL =================
 function setupSearch() {
     const search = DOM.empresaSearch;
-    const dropdown = document.querySelector('.dropdown-content');
+    const dropdown = DOM.dropdownEmpresas;
     let isOpen = false;
 
     const toggleDropdown = (open) => {
         isOpen = open;
         dropdown.style.display = open ? 'block' : 'none';
-        DOM.empresa.size = open ? 5 : 1;
-        
-        if(open) {
-            search.focus();
-            [...DOM.empresa.options].forEach(opt => opt.style.display = 'block');
-        }
+        if(open) search.focus();
     };
 
-    search.addEventListener('click', () => !isOpen && toggleDropdown(true));
-    
+    // Eventos de abertura
+    search.addEventListener('focus', () => toggleDropdown(true));
+    search.addEventListener('click', () => toggleDropdown(true));
+
+    // Fechar ao clicar fora
     document.addEventListener('click', (e) => {
-        if(!e.target.closest('.custom-dropdown')) toggleDropdown(false);
+        if(!e.target.closest('.dropdown-container')) toggleDropdown(false);
     });
 
+    // Filtro em tempo real
     search.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        [...DOM.empresa.options].forEach(opt => {
-            opt.style.display = opt.text.toLowerCase().includes(term) ? 'block' : 'none';
+        const items = document.querySelectorAll('.dropdown-item');
+        
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(term) ? 'block' : 'none';
         });
     });
 
-    DOM.empresa.addEventListener('click', (e) => {
-        if(e.target.tagName === 'OPTION') {
-            search.value = e.target.textContent;
-            DOM.empresa.value = e.target.value;
-            toggleDropdown(false);
-            
-            if(e.target.value === '__nova__') {
-                DOM.empresa.classList.add('hidden');
-                DOM.addCompanyBox.classList.add('visible');
-                DOM.novaEmpresa.focus();
-            } else {
-                carregarDetalhesEmpresa();
-            }
-        }
+    // Navegação por teclado
+    search.addEventListener('keydown', (e) => {
+        if(e.key === 'Escape') toggleDropdown(false);
     });
+}
 
-    search.addEventListener('keydown', (e) => e.key === 'Escape' && toggleDropdown(false));
+function selectEmpresa(value) {
+    DOM.empresaSearch.value = value;
+    DOM.empresa.value = value;
+    DOM.dropdownEmpresas.style.display = 'none';
+    
+    if(value !== '__nova__') {
+        carregarDetalhesEmpresa();
+    } else {
+        showAddCompany();
+    }
+}
+
+function showAddCompany() {
+    DOM.empresaSearch.value = '';
+    DOM.dropdownEmpresas.style.display = 'none';
+    DOM.addCompanyBox.classList.add('visible');
+    DOM.novaEmpresa.focus();
 }
 
 // ================= FUNÇÕES PRINCIPAIS =================
@@ -84,9 +93,23 @@ async function carregarEmpresas() {
         if(!response.ok) throw new Error('Erro ao carregar empresas');
         
         const empresas = await response.json();
-        DOM.empresa.innerHTML = empresas.map(e => 
-            `<option value="${e}">${e}</option>`
-        ).join('') + '<option value="__nova__" style="color:#FF6B00;font-weight:500">✚ Adicionar nova empresa</option>';
+        const dropdownContent = empresas.map(empresa => `
+            <div class="dropdown-item" 
+                 data-value="${empresa}"
+                 onclick="selectEmpresa('${empresa}')">
+                ${empresa}
+            </div>
+        `).join('') + `
+            <div class="dropdown-item" 
+                 data-value="__nova__" 
+                 style="color:var(--mozup-orange);font-weight:500"
+                 onclick="selectEmpresa('__nova__')">
+                ✚ Adicionar nova empresa
+            </div>
+        `;
+
+        DOM.dropdownEmpresas.innerHTML = dropdownContent;
+        DOM.empresa.innerHTML = empresas.map(e => `<option value="${e}">${e}</option>`).join('');
 
         if(empresas.length > 0) {
             DOM.empresaSearch.value = empresas[0];
@@ -149,7 +172,6 @@ async function adicionarNovaEmpresa() {
             DOM.empresaSearch.value = nome;
             DOM.empresa.value = nome;
             DOM.addCompanyBox.classList.remove('visible');
-            DOM.empresa.classList.remove('hidden');
             
             mostrarToast('Empresa adicionada com sucesso!');
             await carregarDetalhesEmpresa();
@@ -159,7 +181,6 @@ async function adicionarNovaEmpresa() {
     } catch (error) {
         mostrarToast(`Erro: ${error.message}`);
         console.error(error);
-        DOM.empresa.classList.add('hidden');
         DOM.addCompanyBox.classList.add('visible');
         DOM.novaEmpresa.focus();
     } finally {
@@ -238,11 +259,9 @@ function alterarEstadoBotao(carregando) {
 // ================= EVENT LISTENERS =================
 DOM.confirmarEmpresa.addEventListener('click', adicionarNovaEmpresa);
 DOM.cancelarEmpresa.addEventListener('click', () => {
-    DOM.empresa.classList.remove('hidden');
     DOM.addCompanyBox.classList.remove('visible');
+    DOM.empresaSearch.value = DOM.empresa.value;
     DOM.novaEmpresa.value = '';
-    DOM.empresa.value = '';
-    DOM.empresaSearch.value = '';
 });
 
 // ================= INICIALIZAÇÃO =================
@@ -258,20 +277,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(error);
     }
 });
-
-// stats.js - Integração com Chart.js
-async function carregarEstatisticas() {
-  const response = await fetch(`${API_URL}?action=estatisticas&location=${LOCATION}`);
-  const data = await response.json();
-  
-  new Chart(document.getElementById('generoChart'), {
-    type: 'pie',
-    data: {
-      labels: ['Masculino', 'Feminino'],
-      datasets: [{
-        data: [data.masculino, data.feminino],
-        backgroundColor: ['#FF6B00', '#2D3748']
-      }]
-    }
-  });
-}

@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" href="icons/icon-192x192.png">
     <link rel="shortcut icon" href="favicon1.png" type="image/x-icon">
-
 </head>
 <body>
     <div class="app-container">
@@ -25,25 +24,34 @@
 
         <main>
             <form id="presencaForm">
+                <!-- Seção Empresa com Novo Dropdown -->
                 <div class="input-group">
-                    <label for="empresa">Empresa</label>
+                    <label for="empresaSearch">Empresa</label>
                     <div class="dropdown-container">
                         <div class="custom-dropdown">
                             <input type="text" 
                                    id="empresaSearch" 
-                                   placeholder="Pesquisar ou selecionar empresa..."
                                    class="search-input"
-                                   autocomplete="off">
+                                   placeholder="Pesquisar ou selecionar empresa..."
+                                   autocomplete="off"
+                                   aria-label="Selecionar empresa">
                             
-                            <div class="dropdown-content">
-                                <select id="empresa" size="5" required>
-                                    <option value="">Carregando empresas...</option>
-                                </select>
+                            <div class="dropdown-list" id="dropdownEmpresas">
+                                <!-- Opções carregadas dinamicamente via JavaScript -->
                             </div>
                         </div>
-                        
+
+                        <!-- Select original oculto -->
+                        <select id="empresa" class="hidden">
+                            <option value="">Carregando empresas...</option>
+                        </select>
+
+                        <!-- Caixa de nova empresa -->
                         <div class="add-company-box hidden">
-                            <input type="text" id="novaEmpresa" placeholder="Digite o nome da nova empresa">
+                            <input type="text" 
+                                   id="novaEmpresa" 
+                                   placeholder="Digite o nome da nova empresa"
+                                   aria-label="Nome da nova empresa">
                             <div class="button-group">
                                 <button type="button" id="confirmarEmpresa" class="btn-confirm">✔</button>
                                 <button type="button" id="cancelarEmpresa" class="btn-cancel">✖</button>
@@ -52,41 +60,62 @@
                     </div>
                 </div>
 
+                <!-- Demais Campos do Formulário -->
                 <div class="input-group">
                     <label for="correcao">Corrigir Nome da Empresa</label>
-                    <input type="text" id="correcao" placeholder="Digite o nome correcto (opcional)">
+                    <input type="text" 
+                           id="correcao" 
+                           placeholder="Digite o nome correto (opcional)"
+                           aria-label="Correção do nome da empresa">
                 </div>
 
                 <div class="input-group">
                     <label for="participante">Participante</label>
-                    <input type="text" id="participante" placeholder="Nome completo" required>
+                    <input type="text" 
+                           id="participante" 
+                           placeholder="Nome completo" 
+                           required
+                           aria-label="Nome do participante">
                 </div>
 
                 <div class="input-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="exemplo@empresa.com" required>
+                    <input type="email" 
+                           id="email" 
+                           placeholder="exemplo@empresa.com" 
+                           required
+                           aria-label="Endereço de email">
                 </div>
 
                 <div class="input-group">
                     <label for="contacto">Contacto</label>
-                    <input type="tel" id="contacto" placeholder="+258 8X XXX XXXX" required>
+                    <input type="tel" 
+                           id="contacto" 
+                           placeholder="+258 8X XXX XXXX" 
+                           required
+                           aria-label="Número de contato">
                 </div>
 
                 <div class="input-group">
                     <label for="funcao">Função</label>
-                    <input type="text" id="funcao" placeholder="Cargo/Função" required>
+                    <input type="text" 
+                           id="funcao" 
+                           placeholder="Cargo/Função" 
+                           required
+                           aria-label="Função do participante">
                 </div>
 
                 <div class="input-group">
                     <label for="genero">Gênero</label>
-                    <select id="genero" required>
+                    <select id="genero" required aria-label="Selecionar gênero">
                         <option value="">Selecione...</option>
                         <option>Masculino</option>
                         <option>Feminino</option>
                     </select>
                 </div>
 
-                <button type="submit" class="mozup-button">
+                <!-- Botão de Submissão -->
+                <button type="submit" class="mozup-button" aria-label="Salvar dados">
                     <svg class="icon" viewBox="0 0 24 24">
                         <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
                     </svg>
@@ -94,7 +123,6 @@
                     <span id="btnLoading" class="loading-hidden">A Salvar...</span>
                 </button>
             </form>
-            
         </main>
 
         <footer>
@@ -102,8 +130,9 @@
         </footer>
     </div>
 
-    <div id="toast" class="toast-hidden"></div>
-    <div id="loading" class="loading-hidden">
+    <!-- Componentes de Feedback -->
+    <div id="toast" class="toast-hidden" role="alert"></div>
+    <div id="loading" class="loading-hidden" aria-live="polite">
         <svg class="loading-spinner" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FF6B00">
             <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" 
                   stroke-width="2" 
