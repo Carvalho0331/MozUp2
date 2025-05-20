@@ -129,6 +129,7 @@ h1 {
 }
 
 .dropdown-list {
+  touch-action: pan-y;
   position: absolute;
   width: 100%;
   max-height: 200px;
@@ -155,11 +156,23 @@ h1 {
 }
 
 .dropdown-item {
+   pointer-events: none; /* Desativa cliques durante renderização */
   padding: 12px 16px;
   cursor: pointer;
   color: var(--mozup-dark);
   font-size: 0.95rem;
   transition: all 0.2s;
+   padding: 14px 16px;
+  min-height: 48px; /* Tamanho mínimo para toque */
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.dropdown-list:not(.scrolling) .dropdown-item {
+    pointer-events: auto; /* Reativa cliques quando não está scrollando */
+}
+
+.dropdown-list.scrolling {
+    cursor: grab;
 }
 
 .dropdown-item:hover {
@@ -174,6 +187,12 @@ h1 {
 
 .dropdown-item[data-value="__nova__"]:hover {
   background: #fff5f0;
+}
+@media (pointer: coarse) {
+  .dropdown-item {
+    padding: 16px 20px;
+    min-height: 56px;
+  }
 }
 
 /* ========== FORMULÁRIO ========== */

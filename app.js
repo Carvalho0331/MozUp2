@@ -30,14 +30,42 @@ let isTouchDevice = false;
 function initEventListeners() {
     document.addEventListener('touchstart', () => isTouchDevice = true, { once: true });
 
-    function handleInteraction(e) {
-        e.preventDefault();
-        const item = e.target.closest('.dropdown-item');
-        if(item) selectEmpresa(item.dataset.value);
+let lastTouchY = 0;
+let isScrolling = false;
+
+function handleInteraction(e) {
+    // Verificar se é um scroll
+    if(e.type === 'touchstart') {
+        lastTouchY = e.touches[0].clientY;
+        isScrolling = false;
+    }
+    
+    if(e.type === 'touchmove') {
+        const deltaY = Math.abs(e.touches[0].clientY - lastTouchY);
+        if(deltaY > 5) isScrolling = true;
+        return;
     }
 
-    DOM.dropdownEmpresas.addEventListener('mousedown', handleInteraction);
-    DOM.dropdownEmpresas.addEventListener('touchstart', handleInteraction);
+    if(isScrolling) {
+        isScrolling = false;
+        return;
+    }
+
+    const item = e.target.closest('.dropdown-item');
+    if(item) {
+        e.preventDefault();
+        e.stopPropagation();
+        selectEmpresa(item.dataset.value);
+    }
+}
+
+// Atualize os event listeners:
+function initEventListeners() {
+    DOM.dropdownEmpresas.addEventListener('touchstart', handleInteraction, { passive: true });
+    DOM.dropdownEmpresas.addEventListener('touchmove', handleInteraction, { passive: true });
+    DOM.dropdownEmpresas.addEventListener('touchend', handleInteraction);
+    DOM.dropdownEmpresas.addEventListener('click', handleInteraction);
+}
 }
 
 // ================= DROPDOWN BUSCÁVEL =================
@@ -66,6 +94,13 @@ function setupSearch() {
     });
 
     search.addEventListener('keydown', (e) => e.key === 'Escape' && toggleDropdown(false));
+    DOM.dropdownEmpresas.addEventListener('scroll', () => {
+        DOM.dropdownEmpresas.classList.add('scrolling');
+        clearTimeout(DOM.dropdownEmpresas.scrollTimer);
+        DOM.dropdownEmpresas.scrollTimer = setTimeout(() => {
+            DOM.dropdownEmpresas.classList.remove('scrolling');
+        }, 100);
+    });
 }
 
 // ================= FUNÇÕES PRINCIPAIS =================
@@ -119,8 +154,11 @@ function handleAddCompany(e) {
     e.stopPropagation();
     selectEmpresa('__nova__');
 }
-
+let lastSelectionTime = 0;
 function selectEmpresa(value) {
+      const now = Date.now();
+    if(now - lastSelectionTime < 300) return;
+    lastSelectionTime = now;
     DOM.dropdownEmpresas.style.display = 'none';
     
     if(value === '__nova__') {
