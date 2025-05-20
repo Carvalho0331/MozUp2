@@ -20,13 +20,14 @@ const DOM = {
     addCompanyBox: document.querySelector('.add-company-box'),
     novaEmpresa: document.getElementById('novaEmpresa'),
     confirmarEmpresa: document.getElementById('confirmarEmpresa'),
-    cancelarEmpresa: document.getElementById('cancelarEmpresa')
+    cancelarEmpresa: document.getElementById('cancelarEmpresa'),
+    dropdownContent: document.querySelector('.dropdown-content')
 };
 
 // ================= FUNÇÃO DE PESQUISA =================
 function setupSearch() {
     const search = DOM.empresaSearch;
-    const dropdown = document.querySelector('.dropdown-content');
+    const dropdown = DOM.dropdownContent;
     let isOpen = false;
 
     const toggleDropdown = (open) => {
@@ -35,15 +36,31 @@ function setupSearch() {
         DOM.empresa.size = open ? 5 : 1;
         
         if(open) {
-            search.focus();
-            [...DOM.empresa.options].forEach(opt => opt.style.display = 'block');
+            setTimeout(() => {
+                search.focus();
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+            }, 300);
         }
     };
 
-    search.addEventListener('click', () => !isOpen && toggleDropdown(true));
-    
-    document.addEventListener('click', (e) => {
-        if(!e.target.closest('.custom-dropdown')) toggleDropdown(false);
+    // Eventos para abrir
+    ['click', 'touchstart'].forEach(event => {
+        search.addEventListener(event, (e) => {
+            if(!isOpen) {
+                e.preventDefault();
+                toggleDropdown(true);
+            }
+        }, {passive: false});
+    });
+
+    // Eventos para fechar
+    ['click', 'touchend'].forEach(event => {
+        document.addEventListener(event, (e) => {
+            if(!e.target.closest('.custom-dropdown')) {
+                toggleDropdown(false);
+            }
+        });
     });
 
     search.addEventListener('input', (e) => {
@@ -53,23 +70,39 @@ function setupSearch() {
         });
     });
 
-    DOM.empresa.addEventListener('click', (e) => {
-        if(e.target.tagName === 'OPTION') {
-            search.value = e.target.textContent;
-            DOM.empresa.value = e.target.value;
-            toggleDropdown(false);
-            
-            if(e.target.value === '__nova__') {
-                DOM.empresa.classList.add('hidden');
-                DOM.addCompanyBox.classList.add('visible');
-                DOM.novaEmpresa.focus();
-            } else {
-                carregarDetalhesEmpresa();
-            }
+    DOM.empresa.addEventListener('change', (e) => {
+        const selectedOption = DOM.empresa.options[DOM.empresa.selectedIndex];
+        search.value = selectedOption.textContent;
+        
+        if(selectedOption.value === '__nova__') {
+            DOM.empresa.classList.add('hidden');
+            DOM.addCompanyBox.classList.add('visible');
+            DOM.novaEmpresa.focus();
+        } else {
+            carregarDetalhesEmpresa();
         }
     });
 
-    search.addEventListener('keydown', (e) => e.key === 'Escape' && toggleDropdown(false));
+    // Touch handler para opções
+    dropdown.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const option = e.target.closest('option');
+        if(option) {
+            option.selected = true;
+            DOM.empresa.dispatchEvent(new Event('change'));
+            toggleDropdown(false);
+        }
+    }, {passive: false});
+
+    // Teclado virtual
+    search.addEventListener('blur', () => {
+        if(!isOpen) return;
+        setTimeout(() => {
+            if(document.activeElement !== search && !document.activeElement.closest('.dropdown-content')) {
+                toggleDropdown(false);
+            }
+        }, 10);
+    });
 }
 
 // ================= FUNÇÕES PRINCIPAIS =================
