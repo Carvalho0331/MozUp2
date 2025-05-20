@@ -258,3 +258,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(error);
     }
 });
+
+// stats.js - Integração com Chart.js
+async function carregarEstatisticas() {
+  const response = await fetch(`${API_URL}?action=estatisticas&location=${LOCATION}`);
+  const data = await response.json();
+  
+  new Chart(document.getElementById('generoChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Masculino', 'Feminino'],
+      datasets: [{
+        data: [data.masculino, data.feminino],
+        backgroundColor: ['#FF6B00', '#2D3748']
+      }]
+    }
+  });
+}

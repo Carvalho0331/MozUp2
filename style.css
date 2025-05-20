@@ -13,7 +13,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  transition: var(--transition);
+  transition: var(--transition);  
 }
 
 html {
@@ -309,6 +309,7 @@ select:focus {
   box-shadow: var(--shadow);
   cursor: pointer;
   transition: var(--transition);
+  border: none;
 
 
 }
