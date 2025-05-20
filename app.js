@@ -28,27 +28,32 @@ function setupSearch() {
     const search = DOM.empresaSearch;
     const dropdown = document.querySelector('.dropdown-content');
     let isOpen = false;
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
-    const toggleDropdown = (open) => {
-        isOpen = open;
-        dropdown.style.display = open ? 'block' : 'none';
-        DOM.empresa.size = open ? 5 : 1;
-        
-        if(open) {
+    const toggleDropdown = (shouldOpen) => {
+        isOpen = shouldOpen;
+        dropdown.style.display = shouldOpen ? 'block' : 'none';
+        DOM.empresa.size = shouldOpen ? 5 : 1;
+
+        if(shouldOpen) {
             search.focus();
-            [...DOM.empresa.options].forEach(opt => opt.style.display = 'block');
-            document.body.style.overflow = 'hidden'; // Bloquear scroll
+            document.body.style.overflow = 'hidden';
+            if(isMobile) {
+                setTimeout(() => {
+                    window.scrollTo(0, search.getBoundingClientRect().top + window.scrollY - 100);
+                }, 50);
+            }
         } else {
-            document.body.style.overflow = 'auto'; // Restaurar scroll
+            document.body.style.overflow = 'auto';
         }
     };
 
-    const handleSelection = (opt) => {
-        search.value = opt.textContent;
-        DOM.empresa.value = opt.value;
+    const handleSelect = (option) => {
+        search.value = option.textContent;
+        DOM.empresa.value = option.value;
         toggleDropdown(false);
         
-        if(opt.value === '__nova__') {
+        if(option.value === '__nova__') {
             DOM.empresa.classList.add('hidden');
             DOM.addCompanyBox.classList.add('visible');
             DOM.novaEmpresa.focus();
@@ -58,20 +63,21 @@ function setupSearch() {
     };
 
     // Eventos de abertura
-    search.addEventListener('click', () => !isOpen && toggleDropdown(true));
-    search.addEventListener('touchend', (e) => {
+    const openHandler = (e) => {
         e.preventDefault();
-        !isOpen && toggleDropdown(true);
-    });
+        if(!isOpen) toggleDropdown(true);
+    };
+    search.addEventListener('click', openHandler);
+    search.addEventListener('touchend', openHandler);
 
     // Eventos de fechamento
-    document.addEventListener('click', (e) => {
-        if(!e.target.closest('.custom-dropdown')) toggleDropdown(false);
-    });
-    
-    document.addEventListener('touchstart', (e) => {
-        if(!e.target.closest('.custom-dropdown')) toggleDropdown(false);
-    });
+    const closeHandler = (e) => {
+        if(!e.target.closest('.custom-dropdown')) {
+            toggleDropdown(false);
+        }
+    };
+    document.addEventListener('click', closeHandler);
+    document.addEventListener('touchstart', closeHandler);
 
     // Filtro de pesquisa
     search.addEventListener('input', (e) => {
@@ -81,19 +87,25 @@ function setupSearch() {
         });
     });
 
-    // Manipulação de seleção
-    const handleInteraction = (e) => {
-        if(e.target.tagName === 'OPTION') {
-            handleSelection(e.target);
+    // Seleção mobile otimizada
+    const selectionHandler = (e) => {
+        const option = e.target.closest('option');
+        if(option) {
+            handleSelect(option);
+            if(isMobile) {
+                setTimeout(() => {
+                    window.scrollTo(0, search.getBoundingClientRect().top + window.scrollY - 50);
+                }, 100);
+            }
         }
     };
-
-    // Eventos de seleção
-    DOM.empresa.addEventListener('click', handleInteraction);
-    DOM.empresa.addEventListener('touchend', handleInteraction);
+    DOM.empresa.addEventListener('click', selectionHandler);
+    DOM.empresa.addEventListener('touchend', selectionHandler);
 
     // Tecla Escape
-    search.addEventListener('keydown', (e) => e.key === 'Escape' && toggleDropdown(false));
+    search.addEventListener('keydown', (e) => {
+        if(e.key === 'Escape') toggleDropdown(false);
+    });
 }
 
 // ================= FUNÇÕES PRINCIPAIS =================
@@ -277,6 +289,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         await carregarEmpresas();
         setupSearch();
         DOM.form.addEventListener('submit', enviarFormulario);
+        
+        // Fix para iOS
+        if(/iPhone|iPad/i.test(navigator.userAgent)) {
+            document.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('focus', () => {
+                    setTimeout(() => {
+                        el.scrollIntoView({behavior: 'smooth', block: 'center'});
+                    }, 300);
+                });
+            });
+        }
     } catch (error) {
         mostrarToast('Falha crítica no sistema!', 10000);
         console.error(error);

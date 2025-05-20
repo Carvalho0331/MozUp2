@@ -435,3 +435,60 @@ p{
 .btn-cancel:hover {
   background: #fff0f0;
 }
+
+/* Adicione estas regras específicas para mobile */
+@media (max-width: 768px) {
+  .custom-dropdown {
+    position: static;
+    touch-action: manipulation;
+  }
+
+  .dropdown-content {
+    position: fixed !important;
+    width: 90% !important;
+    max-height: 60vh !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
+    z-index: 9999 !important;
+  }
+
+  #empresa {
+    -webkit-overflow-scrolling: touch;
+    font-size: 16px;
+  }
+
+  #empresa option {
+    padding: 16px !important;
+    min-height: 48px !important;
+    line-height: 1.5 !important;
+  }
+
+  .search-input {
+    font-size: 16px !important;
+    padding: 1rem 3rem 1rem 1rem !important;
+  }
+}
+
+/* Regra crucial para todos os dispositivos touch */
+@media (hover: none) and (pointer: coarse) {
+  .dropdown-content {
+    display: none;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .search-input:focus + .dropdown-content,
+  .dropdown-content:active {
+    display: block !important;
+  }
+
+  #empresa option {
+    padding: 16px !important;
+    touch-action: manipulation;
+  }
+}
