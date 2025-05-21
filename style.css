@@ -402,6 +402,7 @@ h2 {
 }
 .location-icon,.training-icon{
   font-size: 50px;
+margin-bottom:20px;
 }
 
 .preview-visible {
