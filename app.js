@@ -59,7 +59,7 @@ function handleInteraction(e) {
     }
 }
 
-// Atualize os event listeners:
+
 function initEventListeners() {
     DOM.dropdownEmpresas.addEventListener('touchstart', handleInteraction, { passive: true });
     DOM.dropdownEmpresas.addEventListener('touchmove', handleInteraction, { passive: true });
